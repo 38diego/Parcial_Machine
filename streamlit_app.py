@@ -106,6 +106,6 @@ print("Hello world ...")
 
 st.code(code1, language='R')
 
-process1 = subprocess.Popen(["/usr/bin/Rscript", "helloworld.R"], stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+process1 = subprocess.Popen(["Rscript", "helloworld.R"], stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
 result1 = process1.communicate()
 st.write(result1)
