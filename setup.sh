@@ -1,4 +1,7 @@
 #!/bin/bash
+
+mkdir -p ~/.streamlit/
+
 echo "Actualizando lista de paquetes..."
 apt-get update -y
 
@@ -12,3 +15,5 @@ else
     echo "Rscript no se encontró en /usr/bin/"
     exit 1
 fi
+
+" > ~/.streamlit/config.toml
