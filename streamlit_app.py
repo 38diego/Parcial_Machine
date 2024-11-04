@@ -1,3 +1,6 @@
+!sudo apt update
+!sudo apt install -y r-base
+
 import streamlit as st
 import subprocess
 import numpy as np
