@@ -1,2 +1,5 @@
-sudo apt update
-sudo apt install -y r-base
+#!/bin/bash
+
+echo "Running setup..."
+apt-get update
+apt-get install -y r-base
