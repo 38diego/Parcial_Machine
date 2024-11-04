@@ -26,26 +26,26 @@ from sklearn.linear_model import LinearRegression # Existe un modulo unicamente 
 
 model = LinearRegression(
 
-                fit_intercept: bool, default=True 
-                #Parametro para calcular el intercepto o no. Si se establece en False, no se utilizará ningún intercepto 
-                #en los cálculos pero se espera que los datos estén centrados). 
-                
-                copy_X: bool, default=True
-                #Parametro para hacer una copia de los datos, Si se marca como False se sobreescribiran los cambios en los datos originales 
-                
-                positive: bool, default=False
-                #Cuando se establece en True, obliga a que los coeficientes sean positivos. Esta opción sólo es compatible con matrices densas.
-                
-                n_jobs: int, default=None
-                #número de núcleos que el algoritmo debe utilizar para procesar la tarea. Esto sólo proporcionará un aumento de velocidad en el 
-                #caso de problemas suficientemente grandes, esta opcion se positive se establece en True. Si el parametro es None significa 1 a 
-                #menos que esté en un contexto joblib.parallel_backend. -1 significa utilizar todos los procesadores.
+        fit_intercept: bool, default=True 
+        #Parametro para calcular el intercepto o no. Si se establece en False, no se utilizará ningún intercepto 
+        #en los cálculos pero se espera que los datos estén centrados). 
+        
+        copy_X: bool, default=True
+        #Parametro para hacer una copia de los datos, Si se marca como False se sobreescribiran los cambios en los datos originales 
+        
+        positive: bool, default=False
+        #Cuando se establece en True, obliga a que los coeficientes sean positivos. Esta opción sólo es compatible con matrices densas.
+        
+        n_jobs: int, default=None
+        #número de núcleos que el algoritmo debe utilizar para procesar la tarea. Esto sólo proporcionará un aumento de velocidad en el 
+        #caso de problemas suficientemente grandes, esta opcion se positive se establece en True. Si el parametro es None significa 1 a 
+        #menos que esté en un contexto joblib.parallel_backend. -1 significa utilizar todos los procesadores.
 
-                #Si el parámetro positive es True, añade una restricción adicional en el ajuste del modelo, y el cálculo se vuelve más complejo 
-                #porque el algoritmo tiene que asegurarse de que todas las soluciones cumplen con esta restricción, por lo que no puede usar el 
-                #método estándar de mínimos cuadrados ordinarios. En su lugar, necesita utilizar un algoritmo de optimización restringida, como 
-                #Least Squares with Non-Negative Constraints (NNLS), que tiene un costo computacional mayor y por lo tanto se necesitan mas jobs.
-                )
+        #Si el parámetro positive es True, añade una restricción adicional en el ajuste del modelo, y el cálculo se vuelve más complejo 
+        #porque el algoritmo tiene que asegurarse de que todas las soluciones cumplen con esta restricción, por lo que no puede usar el 
+        #método estándar de mínimos cuadrados ordinarios. En su lugar, necesita utilizar un algoritmo de optimización restringida, como 
+        #Least Squares with Non-Negative Constraints (NNLS), que tiene un costo computacional mayor y por lo tanto se necesitan mas jobs.
+        )
 
 #Ahora para ajustar el modelo usamos el metodo .fit()
 
