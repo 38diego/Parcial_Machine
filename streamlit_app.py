@@ -1,13 +1,11 @@
-!sudo apt update
-!sudo apt install -y r-base
-
 import streamlit as st
 import subprocess
 import numpy as np
 import matplotlib.pyplot as plt
 from sklearn.linear_model import LinearRegression
 from streamlit_navigation_bar import st_navbar
-import os
+
+#sudo apt install r-base
 
 st.set_page_config(layout="wide")
 
