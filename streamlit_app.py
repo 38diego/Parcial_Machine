@@ -15,11 +15,6 @@ st.write("<p style='font-size:25px;'>1. ¿Qué método utiliza la clase LinearRe
          Scikit-learn por defecto para ajustar un modelo de regresión lineal?</p>", 
          unsafe_allow_html=True)
 
-st.write("<p style='font-size:23px;'>En Scikit-learn para entrenar un modelo de regresion \
-         lineal se hace mediante la clase LinearRegresion del modulo linear_model, esta clase \
-         tiene los siguientes parametros:</p>", 
-         unsafe_allow_html=True)
-
 st.code('''
 model.fit(
         
@@ -74,14 +69,232 @@ st.write('''<p style='font-size:25px;'>
 st.markdown('''
         <p style='font-size:23px;'>
         En R al usar lm() usa la tecnica de minimos cuadrados ordinarios cuando no se indican pesos en el parametro weights, 
-        Si este parametro tiene pesos, usa la tecnica de minimos cuadrados ponderados con los pesos indicados en este parametro.
+        Si este parametro tiene pesos, usa la tecnica de minimos cuadrados ponderados con los pesos indicados en este parametro,
+        un ejemplo de uso y aplicacion de los pesos son los siguientes:
         </p>''', unsafe_allow_html=True)
+
+st.code('''
+library(ggplot2)
+
+set.seed(123)
+n <- 100
+x <- rnorm(n, mean = 5, sd = 2)
+y <- 3 + 1.5 * x + rnorm(n, sd = 1)
+
+# Asignar pesos más extremos
+weights <- ifelse(x > 5, 100, 0.01)  # Pesos muy altos para x > 5, muy bajos para el resto
+
+# Ajustar el modelo sin ponderación
+modelo_sin_ponderacion <- lm(y ~ x)
+
+# Ajustar el modelo con ponderación
+modelo_con_ponderacion <- lm(y ~ x, weights = weights)
+
+# Crear un data frame con las predicciones de ambos modelos
+datos <- data.frame(x = x, y = y, weights = weights)
+datos$pred_sin_ponderacion <- predict(modelo_sin_ponderacion)
+datos$pred_con_ponderacion <- predict(modelo_con_ponderacion)
+
+# Crear una nueva variable para resaltar los puntos con pesos altos
+datos$highlight <- ifelse(datos$weights == 100, "Peso Alto", "Peso Bajo")
+
+# Graficar los datos y las dos líneas de regresión
+ggplot(datos, aes(x = x, y = y)) +
+  geom_point(aes(color = highlight), alpha = 0.7) +  # Colorear según el tipo de peso
+  geom_line(aes(y = pred_sin_ponderacion, color = "Sin Ponderación"), size = 1, linetype = "dashed") +
+  geom_line(aes(y = pred_con_ponderacion, color = "Con Ponderación"), size = 1) +
+  labs(
+    title = "Comparación de Regresión: Sin Ponderación vs. Con Ponderación",
+    x = "Variable Independiente (x)",
+    y = "Variable Dependiente (y)",
+    color = "Modelo"
+  ) +
+  scale_color_manual(
+    name = "",
+    values = c("Sin Ponderación" = "blue", "Con Ponderación" = "red", "Peso Alto" = "red", "Peso Bajo" = "gray")
+  ) +  # Colorear las líneas y los puntos
+  theme_minimal() +
+  theme(legend.position = "bottom") +
+  guides(size = guide_legend(title = "Pesos"))     
+''')
 
 process1 = subprocess.Popen(["Rscript", "helloworld.R"], stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
 result1 = process1.communicate()
 image = Image.open('plot.png')
-st.image(image)
 
+_, col1, _ = st.columns([0.1,0.2,0.1])
+
+with col1:
+        st.image(image,width=600)
+        st.caption('''**Figure 1.** Se asignaron pesos mayores a los datos se asignarion si tienen un valor a 
+                   5 que son los que corresponden al color rojo''')
+
+st.write('''<p style='font-size:25px;'>
+        3. ¿Qué método está diseñado en Scikit-learn para aplicar el descenso del gradiente en la regresión lineal y 
+        cuándo es útil utilizarlo?</p>''', 
+        unsafe_allow_html=True)
+
+st.write('''<p style='font-size:23px;'>
+        Para aplicar el descenso del gradiente en Scikit-learn para regresión lineal es la clase SGDRegressor, los parametros de 
+        esta clase son los siguientes: </p>''', unsafe_allow_html=True)
+
+st.code('''
+SGDRegressor(
+
+        loss: str, default=squared_error
+        #La función de pérdida a utilizar. Puede ser squared_error para mínimos cuadrados,
+        #huber para reducir el impacto de outliers, epsilon_insensitive que ignora errores menores a epsilon,
+        #o squared_epsilon_insensitive que combina ambas.
+
+        epsilon: float, default=0.1
+        #Umbral para las funciones de pérdida huber y epsilon_insensitive.
+            
+        penalty: {l2, l1, elasticnet, None}, default=l2
+        #El término de regularización. None desactiva la penalización.
+
+        alpha: float, default=0.0001
+        #Constante que multiplica el término de regularización.
+
+        l1_ratio: float, default=0.15
+        #Parámetro de mezcla para Elastic Net; controla la proporción de L1 y L2.
+
+        fit_intercept: bool, default=True
+        #Indica si se debe estimar el intercepto. Si es False, se asume que los datos están centrados.
+
+        max_iter: int, default=1000
+        #Máximo número de épocas sobre los datos de entrenamiento.
+
+        tol: float or None, default=1e-3
+        #Criterio de parada. Si es None, el entrenamiento se detiene cuando no mejora después de n_iter_no_change.
+
+        shuffle: bool, default=True
+        #Indica si los datos de entrenamiento deben mezclarse después de cada época.
+
+        verbose: int, default=0
+        #Nivel de detalle del proceso. 
+
+        random_state: int or RandomState, default=None
+        #Controla la aleatoriedad en el barajado de datos cuando shuffle es True.
+
+        learning_rate: str, default='invscaling'
+        #Estrategia de ajuste de tasa de aprendizaje; puede ser 'constant', 'optimal', 'invscaling', o 'adaptive'.
+
+        eta0: float, default=0.01
+        #Tasa de aprendizaje inicial para los ajustes 'constant', 'invscaling' y 'adaptive'.
+
+        power_t: float, default=0.25
+        #Exponente para la tasa de aprendizaje de escalado inverso.
+
+        early_stopping: bool, default=False
+        #Si True, se usa para detener el entrenamiento cuando el rendimiento de validación no mejora.
+
+        validation_fraction: float, default=0.1
+        #Proporción de datos de entrenamiento usados como conjunto de validación.
+
+        n_iter_no_change: int, default=5
+        #Número de iteraciones sin mejora antes de detener el entrenamiento.
+
+        warm_start: bool, default=False
+        #Si es True, reutiliza la solución previa al llamar a fit nuevamente.
+
+        average: bool or int, default=False
+        #Si es True, calcula el promedio de los pesos actualizados en cada paso.
+
+)''',language="python")
+
+import numpy as np
+import matplotlib.pyplot as plt
+from sklearn.linear_model import LinearRegression, SGDRegressor
+from sklearn.datasets import make_regression
+from sklearn.metrics import mean_squared_error
+
+# Generar datos de ejemplo (con ruido)
+X, y = make_regression(n_samples=100, n_features=1, noise=10, random_state=42)
+
+# Modelo de Mínimos Cuadrados Ordinarios (OLS)
+ols = LinearRegression()
+ols.fit(X, y)
+
+# Predicciones de OLS
+y_pred_ols = ols.predict(X)
+
+# Modelo de Descenso del Gradiente (SGD)
+sgd = SGDRegressor(max_iter=1000, tol=1e-3, random_state=42)
+sgd.fit(X, y)
+
+# Predicciones de Descenso del Gradiente
+y_pred_sgd = sgd.predict(X)
+
+# Ordenar los datos para visualización
+sorted_indices = np.argsort(X.flatten())
+X_sorted = X[sorted_indices]
+y_pred_ols_sorted = y_pred_ols[sorted_indices]
+y_pred_sgd_sorted = y_pred_sgd[sorted_indices]
+
+# Visualizar los resultados
+plt.figure(figsize=(8, 8))
+plt.scatter(X, y, color='#C9C9C9', label='Datos reales')
+plt.plot(X_sorted, y_pred_ols_sorted, color='red', label='OLS - Mínimos Cuadrados', linestyle='-', linewidth=2)
+plt.plot(X_sorted, y_pred_sgd_sorted, color='blue', label='SGD - Descenso del Gradiente', linestyle='--', linewidth=2)
+plt.xlabel('X')
+plt.ylabel('y')
+plt.grid(True)
+plt.title('Comparación de Regresión: Mínimos Cuadrados vs. Descenso del Gradiente')
+plt.legend()
+_, col1, _ = st.columns([0.1,0.2,0.1])
+
+with col1:
+        st.pyplot(plt)
+
+### 4 punto
+
+st.write('''
+        <p style='font-size:25px;'>
+        4. ¿Qué función en R está diseñada para aplicar el descenso del gradiente en la regresión lineal y 
+        en qué casos es útil utilizarla?</p>
+        ''', unsafe_allow_html=True)
+
+
+### 5 punto
+st.write('''
+        <p style='font-size:25px;'>
+        5. ¿Qué significan los parámetros fit intercept, normalize y positive en la clase LinearRegression de Scikitlearn?</p>
+        ''', unsafe_allow_html=True)
+
+st.write('''
+        <p style='font-size:23px;'>En Scikit-learn para entrenar un modelo de regresion 
+        lineal se hace mediante la clase LinearRegresion del modulo linear_model, esta clase
+        tiene los siguientes parametros:</p>''', 
+         unsafe_allow_html=True)
+
+st.code(
+'''
+from sklearn.linear_model import LinearRegression # Existe un modulo unicamente para modelos lineales :0
+
+model = LinearRegression(
+
+        fit_intercept: bool, default=True 
+        #Parametro para calcular el intercepto o no. Si se establece en False, no se utilizará ningún intercepto 
+        #en los cálculos pero se espera que los datos estén centrados). 
+
+        copy_X: bool, default=True
+        #Parametro para hacer una copia de los datos, Si se marca como False se sobreescribiran los cambios en los datos originales 
+
+        positive: bool, default=False
+        #Cuando se establece en True, obliga a que los coeficientes sean positivos. Esta opción sólo es compatible con matrices densas.
+
+        n_jobs: int, default=None
+        #número de núcleos que el algoritmo debe utilizar para procesar la tarea. Esto sólo proporcionará un aumento de velocidad en el 
+        #caso de problemas suficientemente grandes, esta opcion se positive se establece en True. Si el parametro es None significa 1 a 
+        #menos que esté en un contexto joblib.parallel_backend. -1 significa utilizar todos los procesadores.
+
+        #Si el parámetro positive es True, añade una restricción adicional en el ajuste del modelo, y el cálculo se vuelve más complejo 
+        #porque el algoritmo tiene que asegurarse de que todas las soluciones cumplen con esta restricción, por lo que no puede usar el 
+        #método estándar de mínimos cuadrados ordinarios. En su lugar, necesita utilizar un algoritmo de optimización restringida, como 
+        #Least Squares with Non-Negative Constraints (NNLS), que tiene un costo computacional mayor y por lo tanto se necesitan mas jobs.
+        )
+''',language='python'
+)
 
 ### 6 punto
 st.write("<p style='font-size:25px;'>6. ¿Qué significan los parámetros formula, data, subset, weights, na.action, y method en la \
@@ -143,31 +356,3 @@ st.write("<p style='font-size:23px;'>El modelo no necesita de indicar un entrena
         el modelo se entrena de inmediato y usa la tecnica de Minimos cuadrados si no se indicaron pesos, si se indicaron pesos se usa minimos \
         cuadrados ponderados con los respectivos</p>", 
         unsafe_allow_html=True)
-
-
-'''
-from sklearn.linear_model import LinearRegression # Existe un modulo unicamente para modelos lineales :0
-
-model = LinearRegression(
-
-        fit_intercept: bool, default=True 
-        #Parametro para calcular el intercepto o no. Si se establece en False, no se utilizará ningún intercepto 
-        #en los cálculos pero se espera que los datos estén centrados). 
-
-        copy_X: bool, default=True
-        #Parametro para hacer una copia de los datos, Si se marca como False se sobreescribiran los cambios en los datos originales 
-
-        positive: bool, default=False
-        #Cuando se establece en True, obliga a que los coeficientes sean positivos. Esta opción sólo es compatible con matrices densas.
-
-        n_jobs: int, default=None
-        #número de núcleos que el algoritmo debe utilizar para procesar la tarea. Esto sólo proporcionará un aumento de velocidad en el 
-        #caso de problemas suficientemente grandes, esta opcion se positive se establece en True. Si el parametro es None significa 1 a 
-        #menos que esté en un contexto joblib.parallel_backend. -1 significa utilizar todos los procesadores.
-
-        #Si el parámetro positive es True, añade una restricción adicional en el ajuste del modelo, y el cálculo se vuelve más complejo 
-        #porque el algoritmo tiene que asegurarse de que todas las soluciones cumplen con esta restricción, por lo que no puede usar el 
-        #método estándar de mínimos cuadrados ordinarios. En su lugar, necesita utilizar un algoritmo de optimización restringida, como 
-        #Least Squares with Non-Negative Constraints (NNLS), que tiene un costo computacional mayor y por lo tanto se necesitan mas jobs.
-        )
-'''

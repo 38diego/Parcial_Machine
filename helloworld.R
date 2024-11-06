@@ -4,37 +4,45 @@ if (!requireNamespace("ggplot2", quietly = TRUE)) {
 }
 library(ggplot2, lib.loc = "/home/vscode/R_packages")
 
-# Generar un conjunto de datos de ejemplo
 set.seed(123)
 n <- 100
 x <- rnorm(n, mean = 5, sd = 2)
 y <- 3 + 1.5 * x + rnorm(n, sd = 1)
-weights <- runif(n, min = 0.5, max = 1.5)  # Pesos aleatorios
 
+# Asignar pesos más extremos
+weights <- ifelse(x > 5, 100, 0.01)  # Pesos muy altos para x > 5, muy bajos para el resto
 
+# Ajustar el modelo sin ponderación
 modelo_sin_ponderacion <- lm(y ~ x)
 
+# Ajustar el modelo con ponderación
 modelo_con_ponderacion <- lm(y ~ x, weights = weights)
 
-datos <- data.frame(x = x, y = y)
+# Crear un data frame con las predicciones de ambos modelos
+datos <- data.frame(x = x, y = y, weights = weights)
 datos$pred_sin_ponderacion <- predict(modelo_sin_ponderacion)
 datos$pred_con_ponderacion <- predict(modelo_con_ponderacion)
 
+# Crear una nueva variable para resaltar los puntos con pesos altos
+datos$highlight <- ifelse(datos$weights == 100, "Peso Alto", "Peso Bajo")
+
 # Graficar los datos y las dos líneas de regresión
 ggplot(datos, aes(x = x, y = y)) +
-  geom_point(aes(size = weights), alpha = 0.5) +  # Tamaño de puntos según los pesos
-  geom_line(aes(y = pred_sin_ponderacion), color = "blue", size = 1, linetype = "dashed") +
-  geom_line(aes(y = pred_con_ponderacion), color = "red", size = 1) +
+  geom_point(aes(color = highlight), alpha = 0.7) +  # Colorear según el tipo de peso
+  geom_line(aes(y = pred_sin_ponderacion, color = "Sin Ponderación"), size = 1, linetype = "dashed") +
+  geom_line(aes(y = pred_con_ponderacion, color = "Con Ponderación"), size = 1) +
   labs(
     title = "Comparación de Regresión: Sin Ponderación vs. Con Ponderación",
     x = "Variable Independiente (x)",
-    y = "Variable Dependiente (y)"
+    y = "Variable Dependiente (y)",
+    color = "Modelo"
   ) +
-  scale_size_continuous(name = "Pesos") +
+  scale_color_manual(
+    name = "",
+    values = c("Sin Ponderación" = "blue", "Con Ponderación" = "red", "Peso Alto" = "red", "Peso Bajo" = "gray")
+  ) +  # Colorear las líneas y los puntos
   theme_minimal() +
   theme(legend.position = "bottom") +
-  guides(size = guide_legend(title = "Pesos")) +
-  annotate("text", x = min(x), y = max(y), label = "Sin Ponderación", color = "blue", hjust = 0, vjust = 1) +
-  annotate("text", x = min(x), y = max(y) - 1, label = "Con Ponderación", color = "red", hjust = 0, vjust = 1)
+  guides(size = guide_legend(title = "Pesos"))
 
-  ggsave('plot.png')
+ggsave('plot.png')
