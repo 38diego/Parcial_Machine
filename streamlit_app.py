@@ -120,7 +120,7 @@ ggplot(datos, aes(x = x, y = y)) +
   guides(size = guide_legend(title = "Pesos"))     
 ''')
 
-process1 = subprocess.Popen(["Rscript", "helloworld.R"], stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+process1 = subprocess.Popen(["Rscript", "lm.R"], stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
 result1 = process1.communicate()
 image = Image.open('plot.png')
 
@@ -239,6 +239,11 @@ st.write('''
         en qué casos es útil utilizarla?</p>
         ''', unsafe_allow_html=True)
 
+process2 = subprocess.Popen(["Rscript", "glmnet.R"], stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+result2 = process2.communicate()
+
+st.write(result2)
+#image = Image.open('glmnet.png')
 
 ### 5 punto
 st.write('''
@@ -308,29 +313,29 @@ model <- lm(
         na.action
         #Función que indica qué hacer con los datos que contienen NAs. Puede ser NULL, na.omit, o na.exclude.
 
-        method = "qr"
+        method: default "qr"
         #Método a utilizar, solo se admite method = "qr".
 
-        model = TRUE 
+        model: default TRUE 
         #Indica si quiero retornar los atributos del modelo
 
-        x = FALSE
+        x: default FALSE
         #Indican si se debe devolver la matriz del modelo
 
-        y = FALSE
+        y: default FALSE
         #Indican si se debe devolver la variable dependiente
 
-        qr= TRUE
+        qr: default TRUE
         #Indican si se debe devolver la descomposición QR
 
-        singular.ok = TRUE 
+        singular.ok: default TRUE 
         #Indica si un ajuste singular debe ser considerado como un error.
 
-        contrasts = NULL 
+        contrasts: default NULL 
         #Controla cómo maneja las variables categóricas en el modelo. Cuando se tienen factores (variables categóricas) en el modelo, 
         #necesita codificarlos numéricamente antes de realizar el ajuste, la forma en que se codifican estos factores se conoce como contraste.      
 
-        offset
+        offset: default NULL
         #Permite incluir un componente conocido en el predictor lineal del modelo. Este valor se resta del vector de respuesta antes de calcular 
         #los coeficientes del modelo, lo que significa que no se estima un coeficiente para offset; simplemente se ajusta el modelo con este 
         #término como parte de la ecuación.
@@ -344,9 +349,106 @@ st.write("<p style='font-size:23px;'>El modelo no necesita de indicar un entrena
 
 ### 7 punto
 st.write('''
-        7. ¿Qué significan los parámetros alpha, lambda, standardize, y family en la función glmnet de R?
+        <p style='font-size:25px;'>7. ¿Qué significan los parámetros alpha, lambda, standardize, y family en la función glmnet de R?</p>
         ''', unsafe_allow_html=True)
 
+st.code('''
+glmnet(
+        x
+        #Es la matriz de variables independientes, requisito: Debe tener al menos dos columnas (es decir, nvars > 1).
+
+        y
+        #Es la variable de respuesta. Puede ser de distintos tipos dependiendo del modelo
+
+        family
+        #Especifica el tipo de modelo o distribución de probabilidad para los datos de salida y. Cada familia tiene su propio 
+        #tipo de modelo adecuado para ciertos tipos de datos:
+
+        #gaussian: Regresión lineal estándar, adecuada para datos continuos.
+
+        #binomial: Regresión logística binaria para datos de respuesta binaria. Permite realizar clasificación con salida de 0 y 1.
+        
+        #poisson: Modelo para datos de conteo (no negativos), como el número de eventos que ocurren en un intervalo de tiempo.
+        
+        #multinomial: Regresión multinomial para clasificación en múltiples categorías, donde y es una variable categórica con más de dos niveles.
+        
+        #cox: Modelo de Cox para análisis de supervivencia, donde y es un objeto Surv (paquete survival en R).
+        
+        #mgaussian: Para modelos multivariados de respuesta continua, donde y es una matriz de varias variables de respuesta.
+        
+        weights: default NULL
+        # Vector de pesos para cada observación. Por defecto es 1 para cada observación.
+
+        offset: default NULL
+        #Permite incluir un componente conocido en el predictor lineal del modelo. Este valor se resta del vector de respuesta antes de calcular 
+        #los coeficientes del modelo, lo que significa que no se estima un coeficiente para offset; simplemente se ajusta el modelo con este 
+        #término como parte de la ecuación.
+
+        alpha: default 1
+        #Controla el tipo de regularización en el modelo, combinando la penalización de Ridge y Lasso según el valor que adopte entre 0 y 1.
+        
+        #alpha = 1: Produce la penalización Lasso, que aplica regularización L1, forzando algunos coeficientes a ser exactamente cero y 
+        #favoreciendo la selección de variables.
+
+        #alpha = 0: Produce la penalización Ridge, que aplica regularización L2. Ridge penaliza la magnitud de los coeficientes sin forzar 
+        #a ninguno a ser exactamente cero, ayudando a reducir la varianza del modelo cuando las variables son colineales.
+
+        #0 < alpha < 1: Se obtiene una combinación de ambas penalizaciones, conocida como Elastic Net, que permite un balance entre selección 
+        #de variables (Lasso) y estabilidad frente a colinealidad (Ridge). Elastic Net es útil cuando hay muchas variables correlacionadas, 
+        #ya que tiende a agrupar estas variables en el modelo en lugar de elegir solo una.
+
+        nlambda: default 100
+        #Número de valores de lambda a probar
+
+        lambda.min.ratio: default ifelse(nobs < nvars, 0.01, 1e-04)
+        #El valor más pequeño de lambda como una fracción de lambda.max
+
+        lambda: default NULL
+        #Secuencia de valores de lambda suministrados por el usuario. Si no se proporciona, el algoritmo genera su propia secuencia.
+
+        standardize: default TRUE
+
+        #Este parámetro determina si las variables predictoras x deben ser estandarizadas (escaladas para tener media cero y varianza uno) antes 
+        #de ajustar el modelo. Esto es importante en modelos de regularización, ya que sin estandarización, las variables con escalas más grandes 
+        #pueden dominar la penalización, produciendo coeficientes sospechosos
+
+        intercept: default TRUE
+        #Parametro para calcular el intercepto o no.
+
+        thresh: default 1e-07
+        #Umbral de convergencia para el descenso por coordenadas. Cada iteración continúa hasta que el cambio máximo en el objetivo después 
+        #de cualquier actualización de coeficientes sea menor que este umbral.        
+
+        dfmax: default nvars + 1
+        #Limita el número máximo de variables en el modelo. Esto puede ser útil para conjuntos de datos con muchas variables.
+
+        pmax: default min(dfmax * 2 + 20, nvars)
+        #Limita el número máximo de variables que pueden ser no cero en el modelo.
+
+        exclude: default NULL
+        #Índices de las variables que deben ser excluidas del modelo. Esto es equivalente a aplicar un factor de penalización infinito a esas variables.        
+
+        penalty.factor: default rep(1, nvars)
+        #Factores de penalización separados que se pueden aplicar a cada coeficiente. Esto permite diferenciar el decrecimiento de las variables. 
+        #Puede ser 0 para algunas variables, lo que significa que no se aplicará penalización a esas variables.
+
+        lower.limits: default -Inf
+        #Límites inferiores para los coeficientes.
+
+        upper.limits: default Inf
+        #Límites superiores para los coeficientes.
+
+        maxit: default 1e+05
+        Número máximo de pasadas sobre los datos para cada valor de lambda
+
+        type.gaussian: default ifelse(nvars < 500, "covariance", "naive")
+        #Tipo de algoritmo para la familia "gaussian". "covariance" es más rápido para un número pequeño de variables, mientras que "naive" es más 
+        #eficiente cuando hay muchas más variables que observaciones.
+
+        type.logistic: default c("Newton", "modified.Newton")
+        #Si se debe usar el algoritmo de Newton para ajustar un modelo logístico.
+        )
+''',language="R")
 
 
 ### 8 punto
