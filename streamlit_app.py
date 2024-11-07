@@ -69,8 +69,10 @@ st.write('''<p style='font-size:25px;'>
 st.markdown('''
         <p style='font-size:23px;'>
         En R al usar lm() usa la tecnica de minimos cuadrados ordinarios cuando no se indican pesos en el parametro weights, 
-        Si este parametro tiene pesos, usa la tecnica de minimos cuadrados ponderados con los pesos indicados en este parametro,
-        un ejemplo de uso y aplicacion de los pesos son los siguientes:
+        Si este parametro tiene pesos, usa la tecnica de minimos cuadrados ponderados con los pesos indicados en este parametro, 
+        El modelo no necesita de indicar un entrenamiento, al hacer model <- lm(...) y ajustar lo que queramos, el modelo se entrena 
+        de inmediato y usa la tecnica de Minimos cuadrados si no se indicaron pesos, si se indicaron pesos se usa minimos cuadrados 
+        ponderados con los respectivos pesos, un ejemplo de uso y aplicacion de los pesos son los siguientes:
         </p>''', unsafe_allow_html=True)
 
 st.code('''
@@ -135,73 +137,13 @@ st.write('''<p style='font-size:25px;'>
         unsafe_allow_html=True)
 
 st.write('''<p style='font-size:23px;'>
-        Para aplicar el descenso del gradiente en Scikit-learn para regresión lineal es la clase SGDRegressor, los parametros de 
-        esta clase son los siguientes: </p>''', unsafe_allow_html=True)
+        El método SGDRegressor permite usar una implementación del algoritmo de descenso de gradiente estocástico (SGD)
+        esta es una versión del descenso de gradiente clásico en el que en lugar de usar toda la base de datos para calcular 
+        el gradiente en cada paso, se utiliza solo un subconjunto de los datos. Esto permite que el proceso sea mucho más rápido
+        y adecuado para grandes conjuntos de datos, un ejemplo de uso y su comparacion frente al metodo clasico (OLS) es: 
+        </p>''', unsafe_allow_html=True)
 
 st.code('''
-SGDRegressor(
-
-        loss: str, default=squared_error
-        #La función de pérdida a utilizar. Puede ser squared_error para mínimos cuadrados,
-        #huber para reducir el impacto de outliers, epsilon_insensitive que ignora errores menores a epsilon,
-        #o squared_epsilon_insensitive que combina ambas.
-
-        epsilon: float, default=0.1
-        #Umbral para las funciones de pérdida huber y epsilon_insensitive.
-            
-        penalty: {l2, l1, elasticnet, None}, default=l2
-        #El término de regularización. None desactiva la penalización.
-
-        alpha: float, default=0.0001
-        #Constante que multiplica el término de regularización.
-
-        l1_ratio: float, default=0.15
-        #Parámetro de mezcla para Elastic Net; controla la proporción de L1 y L2.
-
-        fit_intercept: bool, default=True
-        #Indica si se debe estimar el intercepto. Si es False, se asume que los datos están centrados.
-
-        max_iter: int, default=1000
-        #Máximo número de épocas sobre los datos de entrenamiento.
-
-        tol: float or None, default=1e-3
-        #Criterio de parada. Si es None, el entrenamiento se detiene cuando no mejora después de n_iter_no_change.
-
-        shuffle: bool, default=True
-        #Indica si los datos de entrenamiento deben mezclarse después de cada época.
-
-        verbose: int, default=0
-        #Nivel de detalle del proceso. 
-
-        random_state: int or RandomState, default=None
-        #Controla la aleatoriedad en el barajado de datos cuando shuffle es True.
-
-        learning_rate: str, default='invscaling'
-        #Estrategia de ajuste de tasa de aprendizaje; puede ser 'constant', 'optimal', 'invscaling', o 'adaptive'.
-
-        eta0: float, default=0.01
-        #Tasa de aprendizaje inicial para los ajustes 'constant', 'invscaling' y 'adaptive'.
-
-        power_t: float, default=0.25
-        #Exponente para la tasa de aprendizaje de escalado inverso.
-
-        early_stopping: bool, default=False
-        #Si True, se usa para detener el entrenamiento cuando el rendimiento de validación no mejora.
-
-        validation_fraction: float, default=0.1
-        #Proporción de datos de entrenamiento usados como conjunto de validación.
-
-        n_iter_no_change: int, default=5
-        #Número de iteraciones sin mejora antes de detener el entrenamiento.
-
-        warm_start: bool, default=False
-        #Si es True, reutiliza la solución previa al llamar a fit nuevamente.
-
-        average: bool or int, default=False
-        #Si es True, calcula el promedio de los pesos actualizados en cada paso.
-
-)''',language="python")
-
 import numpy as np
 import matplotlib.pyplot as plt
 from sklearn.linear_model import LinearRegression, SGDRegressor
@@ -241,6 +183,49 @@ plt.ylabel('y')
 plt.grid(True)
 plt.title('Comparación de Regresión: Mínimos Cuadrados vs. Descenso del Gradiente')
 plt.legend()
+plt.show()
+''',language='python')
+
+import numpy as np
+import matplotlib.pyplot as plt
+from sklearn.linear_model import LinearRegression, SGDRegressor
+from sklearn.datasets import make_regression
+from sklearn.metrics import mean_squared_error
+
+# Generar datos de ejemplo (con ruido)
+X, y = make_regression(n_samples=100, n_features=1, noise=10, random_state=42)
+
+# Modelo de Mínimos Cuadrados Ordinarios (OLS)
+ols = LinearRegression()
+ols.fit(X, y)
+
+# Predicciones de OLS
+y_pred_ols = ols.predict(X)
+
+# Modelo de Descenso del Gradiente (SGD)
+sgd = SGDRegressor(max_iter=1000, tol=1e-3, random_state=42)
+sgd.fit(X, y)
+
+# Predicciones de Descenso del Gradiente
+y_pred_sgd = sgd.predict(X)
+
+# Ordenar los datos para visualización
+sorted_indices = np.argsort(X.flatten())
+X_sorted = X[sorted_indices]
+y_pred_ols_sorted = y_pred_ols[sorted_indices]
+y_pred_sgd_sorted = y_pred_sgd[sorted_indices]
+
+# Visualizar los resultados
+plt.figure(figsize=(10, 8))
+plt.scatter(X, y, color='#C9C9C9', label='Datos reales')
+plt.plot(X_sorted, y_pred_ols_sorted, color='red', label='OLS - Mínimos Cuadrados', linestyle='-', linewidth=2)
+plt.plot(X_sorted, y_pred_sgd_sorted, color='blue', label='SGD - Descenso del Gradiente', linestyle='--', linewidth=2)
+plt.xlabel('X')
+plt.ylabel('y')
+plt.grid(True)
+plt.title('Comparación de Regresión: Mínimos Cuadrados vs. Descenso del Gradiente')
+plt.legend()
+
 _, col1, _ = st.columns([0.1,0.2,0.1])
 
 with col1:
@@ -356,3 +341,79 @@ st.write("<p style='font-size:23px;'>El modelo no necesita de indicar un entrena
         el modelo se entrena de inmediato y usa la tecnica de Minimos cuadrados si no se indicaron pesos, si se indicaron pesos se usa minimos \
         cuadrados ponderados con los respectivos</p>", 
         unsafe_allow_html=True)
+
+### 7 punto
+st.write('''
+        7. ¿Qué significan los parámetros alpha, lambda, standardize, y family en la función glmnet de R?
+        ''', unsafe_allow_html=True)
+
+
+
+### 8 punto
+st.write('''<p style='font-size:25px;'>
+        8. ¿Qué significan los parámetros loss, penalty, alpha, y max iter en la clase SGDRegressor de Scikit-learn?
+        </p>''', unsafe_allow_html=True)
+
+st.code('''
+SGDRegressor(
+
+        loss: str, default=squared_error
+        #La función de pérdida a utilizar. Puede ser squared_error para mínimos cuadrados,
+        #huber para reducir el impacto de outliers, epsilon_insensitive que ignora errores menores a epsilon,
+        #o squared_epsilon_insensitive que combina ambas.
+
+        epsilon: float, default=0.1
+        #Umbral para las funciones de pérdida huber y epsilon_insensitive.
+            
+        penalty: {l2, l1, elasticnet, None}, default=l2
+        #El término de regularización. None desactiva la penalización.
+
+        alpha: float, default=0.0001
+        #Constante que multiplica el término de regularización.
+
+        l1_ratio: float, default=0.15
+        #Parámetro de mezcla para Elastic Net; controla la proporción de L1 y L2.
+
+        fit_intercept: bool, default=True
+        #Indica si se debe estimar el intercepto. Si es False, se asume que los datos están centrados.
+
+        max_iter: int, default=1000
+        #Máximo número de épocas sobre los datos de entrenamiento.
+
+        tol: float or None, default=1e-3
+        #Criterio de parada. Si es None, el entrenamiento se detiene cuando no mejora después de n_iter_no_change.
+
+        shuffle: bool, default=True
+        #Indica si los datos de entrenamiento deben mezclarse después de cada época.
+
+        verbose: int, default=0
+        #Nivel de detalle del proceso. 
+
+        random_state: int or RandomState, default=None
+        #Controla la aleatoriedad en el barajado de datos cuando shuffle es True.
+
+        learning_rate: str, default='invscaling'
+        #Estrategia de ajuste de tasa de aprendizaje; puede ser 'constant', 'optimal', 'invscaling', o 'adaptive'.
+
+        eta0: float, default=0.01
+        #Tasa de aprendizaje inicial para los ajustes 'constant', 'invscaling' y 'adaptive'.
+
+        power_t: float, default=0.25
+        #Exponente para la tasa de aprendizaje de escalado inverso.
+
+        early_stopping: bool, default=False
+        #Si True, se usa para detener el entrenamiento cuando el rendimiento de validación no mejora.
+
+        validation_fraction: float, default=0.1
+        #Proporción de datos de entrenamiento usados como conjunto de validación.
+
+        n_iter_no_change: int, default=5
+        #Número de iteraciones sin mejora antes de detener el entrenamiento.
+
+        warm_start: bool, default=False
+        #Si es True, reutiliza la solución previa al llamar a fit nuevamente.
+
+        average: bool or int, default=False
+        #Si es True, calcula el promedio de los pesos actualizados en cada paso.
+
+)''',language="python")
