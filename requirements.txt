@@ -1,7 +1,7 @@
 streamlit==1.39
 matplotlib
 scikit-learn
-streamlit_navigation_bar
+#streamlit_navigation_bar
 keras.datasets
 tensorflow
 statsmodels
