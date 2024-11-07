@@ -3,7 +3,7 @@ import subprocess
 import numpy as np
 import matplotlib.pyplot as plt
 from sklearn.linear_model import LinearRegression
-#from streamlit_navigation_bar import st_navbar
+from streamlit_navigation_bar import st_navbar
 from PIL import Image
 
 #st.set_page_config(layout="wide")
