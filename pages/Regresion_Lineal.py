@@ -6,13 +6,13 @@ from sklearn.linear_model import LinearRegression
 from streamlit_navigation_bar import st_navbar
 from PIL import Image
 
-st.set_page_config(layout="wide")
+#st.set_page_config(layout="wide")
 
 st.markdown('# :red[Métodos y parámetros en regresión lineal]')
 
 ### 1 punto
-st.write("<p style='font-size:25px;'>1. ¿Qué método utiliza la clase LinearRegression de \
-         Scikit-learn por defecto para ajustar un modelo de regresión lineal?</p>", 
+st.write("<p style='font-size:25px;'><b>1. ¿Qué método utiliza la clase LinearRegression de \
+         Scikit-learn por defecto para ajustar un modelo de regresión lineal?</b></p>", 
          unsafe_allow_html=True)
 
 st.code('''
@@ -59,12 +59,11 @@ model.rank_ -> int
 >>> 2 #Si este numero es menor a el atributo .n_features_in_, indica multicolinealidad        
 ''',language = "python")
 
-
 ### 2 punto
-st.write('''<p style='font-size:25px;'>
+st.write('''<p style='font-size:25px;'><b>
         2. En R, cuando utilizamos la función lm() para ajustar un modelo de regresión lineal,
         ¿qué técnica se emplea paracalcular los coeficientes?
-        </p>''', unsafe_allow_html=True)
+        </b></p>''', unsafe_allow_html=True)
 
 st.markdown('''
         <p style='font-size:23px;'>
@@ -131,9 +130,10 @@ with col1:
         st.caption('''**Figure 1.** Se asignaron pesos mayores a los datos se asignarion si tienen un valor a 
                    5 que son los que corresponden al color rojo''')
 
-st.write('''<p style='font-size:25px;'>
+st.write('''<p style='font-size:25px;'><b>
         3. ¿Qué método está diseñado en Scikit-learn para aplicar el descenso del gradiente en la regresión lineal y 
-        cuándo es útil utilizarlo?</p>''', 
+        cuándo es útil utilizarlo?
+        </b></p>''', 
         unsafe_allow_html=True)
 
 st.write('''<p style='font-size:23px;'>
@@ -232,23 +232,29 @@ with col1:
         st.pyplot(plt)
 
 ### 4 punto
-
 st.write('''
-        <p style='font-size:25px;'>
+        <p style='font-size:25px;'><b>
         4. ¿Qué función en R está diseñada para aplicar el descenso del gradiente en la regresión lineal y 
-        en qué casos es útil utilizarla?</p>
+        en qué casos es útil utilizarla?
+        </b></p>
         ''', unsafe_allow_html=True)
 
-process2 = subprocess.Popen(["Rscript", "glmnet.R"], stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+process2 = subprocess.Popen(["Rscript", "glmnet.r"], stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
 result2 = process2.communicate()
+image2 = Image.open('glmnet.png')
 
-st.write(result2)
-#image = Image.open('glmnet.png')
+_, col1, _ = st.columns([0.1,0.2,0.1])
+
+with col1:
+        st.image(image2,width=600)
+        st.caption('''**Figure 1.** Se asignaron pesos mayores a los datos se asignarion si tienen un valor a 
+                   5 que son los que corresponden al color rojo''')
 
 ### 5 punto
 st.write('''
-        <p style='font-size:25px;'>
-        5. ¿Qué significan los parámetros fit intercept, normalize y positive en la clase LinearRegression de Scikitlearn?</p>
+        <p style='font-size:25px;'><b>
+        5. ¿Qué significan los parámetros fit intercept, normalize y positive en la clase LinearRegression de Scikitlearn?
+        </b></p>
         ''', unsafe_allow_html=True)
 
 st.write('''
@@ -287,8 +293,9 @@ model = LinearRegression(
 )
 
 ### 6 punto
-st.write("<p style='font-size:25px;'>6. ¿Qué significan los parámetros formula, data, subset, weights, na.action, y method en la \
-        función lm() de R?</p>", unsafe_allow_html=True)
+st.write('''<p style='font-size:25px;'><b>
+        6. ¿Qué significan los parámetros formula, data, subset, weights, na.action, y method en la función lm() de R?
+        <b></p>''', unsafe_allow_html=True)
 
 st.write("<p style='font-size:23px;'>En R para entrenar un modelo de regresion \
          lineal se hace mediante la funcion lm(), esta funcion \
@@ -348,8 +355,9 @@ st.write("<p style='font-size:23px;'>El modelo no necesita de indicar un entrena
         unsafe_allow_html=True)
 
 ### 7 punto
-st.write('''
-        <p style='font-size:25px;'>7. ¿Qué significan los parámetros alpha, lambda, standardize, y family en la función glmnet de R?</p>
+st.write('''<p style='font-size:25px;'><b>
+        7. ¿Qué significan los parámetros alpha, lambda, standardize, y family en la función glmnet de R?
+        <b></p>
         ''', unsafe_allow_html=True)
 
 st.code('''
@@ -450,11 +458,10 @@ glmnet(
         )
 ''',language="R")
 
-
 ### 8 punto
-st.write('''<p style='font-size:25px;'>
+st.write('''<p style='font-size:25px;'><b>
         8. ¿Qué significan los parámetros loss, penalty, alpha, y max iter en la clase SGDRegressor de Scikit-learn?
-        </p>''', unsafe_allow_html=True)
+        </b></p>''', unsafe_allow_html=True)
 
 st.code('''
 SGDRegressor(

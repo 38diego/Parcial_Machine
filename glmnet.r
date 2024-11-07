@@ -45,14 +45,17 @@ pred_lasso <- predict(lasso_model, s = 0, newx = X)  # s = 0 para el valor de la
 ggplot(df, aes(x = x, y = y)) +
   geom_point(aes(color = "Datos reales"), alpha = 0.7) +
   geom_line(aes(y = pred_ols, color = "Ajuste OLS"), linetype = "dashed",size = 1) +
-  geom_line(aes(y = pred_ridge, color = "Ajuste Ridge (glmnet)"), linetype = "solid",size = 1) +
-  geom_line(aes(y = pred_lasso, color = "Ajuste Lasso (glmnet)"), linetype = "dotdash",size = 1) +
+  geom_line(aes(y = pred_ridge, color = "Ajuste Ridge"), linetype = "solid",size = 1) +
+  geom_line(aes(y = pred_lasso, color = "Ajuste Lasso"), linetype = "dotdash",size = 1) +
   labs(title = "Comparación de ajuste: OLS, Ridge y Lasso",
        color = "Líneas") +
   theme_minimal() +
   scale_color_manual(values = c("Datos reales" = "gray", 
                                 "Ajuste OLS" = "blue", 
-                                "Ajuste Ridge (glmnet)" = "red", 
-                                "Ajuste Lasso (glmnet)" = "green"))
+                                "Ajuste Ridge" = "red", 
+                                "Ajuste Lasso" = "green")) + 
+  theme_minimal() +
+  theme(legend.position = "bottom") +
+  guides(size = guide_legend(title = "Pesos"))
 
 ggsave('glmnet.png')
