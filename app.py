@@ -10,7 +10,6 @@ Regresion_lineal = st.Page(
     default=True,
 )
 
-
 Laboratorio = st.Page(
     'pages/Laboratorio_supuestos.py',
     title='Laboratorio_supuestos',
