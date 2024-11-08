@@ -1,5 +1,4 @@
 import streamlit as st
-from keras.datasets import boston_housing
 import pandas as pd
 import numpy as np
 import statsmodels.api as sm
@@ -53,12 +52,11 @@ lower status of the population (percent).
 **medv**
 median value of owner-occupied homes in \$1000s.''')
 
-(train_data, train_targets), (test_data, test_targets) = boston_housing.load_data()
+train_data = pd.read_csv("train_data.csv")
+test_data = pd.DataFrame("test_data.csv")
 
-columns = ["crim","zn","indus","chas","nox","rm","age","dis","rad","tax","ptratio","black","lstat"] 
-
-train_data = pd.DataFrame(train_data,columns=columns)
-test_data = pd.DataFrame(test_data,columns=columns)
+train_data.to_csv("train_data.csv",index=False)
+test_data.to_csv("test_data.csv",index=False)
 
 X_train_sm = sm.add_constant(train_data)
 model_sm = sm.OLS(train_targets, X_train_sm).fit()

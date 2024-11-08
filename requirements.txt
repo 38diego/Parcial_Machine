@@ -2,7 +2,5 @@ streamlit
 matplotlib
 scikit-learn
 streamlit_navigation_bar
-keras
-tensorflow
 statsmodels
 seaborn
