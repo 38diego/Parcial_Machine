@@ -52,14 +52,17 @@ lower status of the population (percent).
 **medv**
 median value of owner-occupied homes in \$1000s.''')
 
+
 train_data = pd.read_csv("train_data.csv")
-test_data = pd.DataFrame("test_data.csv")
+test_data = pd.read_csv("test_data.csv")
 
-train_data.to_csv("train_data.csv",index=False)
-test_data.to_csv("test_data.csv",index=False)
+X = train_data.drop(columns=["medv"])
+y = train_data["medv"]
 
-X_train_sm = sm.add_constant(train_data)
-model_sm = sm.OLS(train_targets, X_train_sm).fit()
+st.write(train_data)
+
+X_train_sm = sm.add_constant(X)
+model_sm = sm.OLS(y, X_train_sm).fit()
 
 # Predict on the training set to calculate residuals
 y_train_pred_sm = model_sm.predict(X_train_sm)
@@ -95,8 +98,8 @@ st.pyplot(plt)
 #cada variable predictora y verificar si alg´un valor es superior a 10, lo cual indicar´ıa multicolinealidad.
 
 vif_data = pd.DataFrame()
-vif_data["Feature"] = train_data.columns
-vif_data["VIF"] = [variance_inflation_factor(train_data.values, i) for i in range(train_data.shape[1])]
+vif_data["Feature"] = X.columns
+vif_data["VIF"] = [variance_inflation_factor(X.values, i) for i in range(X.shape[1])]
 st.dataframe(vif_data)
 
 
