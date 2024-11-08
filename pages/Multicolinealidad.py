@@ -13,8 +13,6 @@ np.random.seed(23)
 X = np.linspace(0, 10, 100)#.reshape(-1, 1)  # Reshape to 2D array
 y = 10 * np.exp(-0.2 * (X - 1)**2) - 5 * np.exp(-0.5 * (X - 6)**2) + np.random.normal(0, 1, X.shape)
 
-print(f"X : {X}",f"Y : {y}",sep="\n")
-
 # Visualize the data
 plt.plot(X, y, 'b.')
 plt.xlabel("X")
