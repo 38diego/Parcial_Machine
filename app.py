@@ -16,6 +16,12 @@ Laboratorio = st.Page(
     url_path='Laboratorio',
 )
 
-streamlit_page = st.navigation([Regresion_lineal,Laboratorio])
+Multicolinealidad = st.Page(
+    'pages/Multicolinealidad.py',
+    title='Multicolinealidad',
+    url_path='Multicolinealidad',
+)
+
+streamlit_page = st.navigation([Regresion_lineal,Laboratorio,Multicolinealidad])
 
 streamlit_page.run()

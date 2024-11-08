@@ -11,7 +11,7 @@ st.write('''
 # Predictoras
 **crim**
 per capita crime rate by town.
-
+    
 zn
 proportion of residential land zoned for lots over 25,000 sq.ft.
 
