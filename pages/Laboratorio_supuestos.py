@@ -59,8 +59,6 @@ test_data = pd.read_csv("test_data.csv")
 X = train_data.drop(columns=["medv"])
 y = train_data["medv"]
 
-st.write(train_data)
-
 X_train_sm = sm.add_constant(X)
 model_sm = sm.OLS(y, X_train_sm).fit()
 

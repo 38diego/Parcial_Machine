@@ -1,6 +1,7 @@
 import streamlit as st
 import subprocess
 import numpy as np
+import pandas as pd
 import matplotlib.pyplot as plt
 from sklearn.linear_model import LinearRegression
 from streamlit_navigation_bar import st_navbar
@@ -11,12 +12,37 @@ from PIL import Image
 st.markdown('# :red[Métodos y parámetros en regresión lineal]')
 
 ### 1 punto
-st.write("<p style='font-size:25px;'><b>1. ¿Qué método utiliza la clase LinearRegression de \
-         Scikit-learn por defecto para ajustar un modelo de regresión lineal?</b></p>", 
-         unsafe_allow_html=True)
+st.write('''
+        <p style='font-size:25px;'><b>
+        1. ¿Qué método utiliza la clase LinearRegression de Scikit-learn por 
+        defecto para ajustar un modelo de regresión lineal?
+        </b></p>''', 
+        unsafe_allow_html=True)
+
+st.write('''<p style='font-size:23px;'>
+        El metodo usado por defecto es el de Minimos cuadrados ordinarios (OLS) cuando usamos
+        la clase LinearRegression, un ejemplo de su uso:
+        </p>''', 
+        unsafe_allow_html=True)
+        
 
 st.code('''
-model.fit(
+from sklearn.linear_model import LinearRegression # Existe un modulo unicamente para modelos lineales :0
+
+#Generamos datos aleatorios
+X = np.random.normal(loc=5, scale=2, size=100)
+
+#Modelamos la variable objetivo con ruido
+y = 3 + 1.5 * x + np.random.normal(scale=1, size=n)
+
+#Asignar pesos altos: 100 si x > 5, 0.01 en caso contrario
+weights = np.where(x > 5, 100, 0.01)
+
+#Instanciamos un objeto de la clase LinearRegression
+model = LinearRegression() 
+
+#Metodo para entrenar, tecnica utilizada para entrenar = (OLS)
+model.fit( 
         
         X: {array-like, sparse matrix} of shape (n_samples, n_features)
         #Un arreglo que contiene los datos del conjunto de entrenamiento.
@@ -28,35 +54,129 @@ model.fit(
         #Un arreglo que especifica los pesos para cada distintas muestras de los datos.
 )
 
+#Ajustar el modelo sin ponderación 
+model_sin_ponderacion = LinearRegression()
+model_sin_ponderacion.fit(X.reshape(-1, 1), y)
+
+#Ajustar el modelo con ponderación
+model_con_ponderacion = LinearRegression()
+model_con_ponderacion.fit(X.reshape(-1, 1), y, sample_weight=weights)
+
+data = pd.DataFrame({'x': X, 'y': y, 'weights': weights})
+data['pred_sin_ponderacion'] = pred_sin_ponderacion
+data['pred_con_ponderacion'] = pred_con_ponderacion
+
+data['highlight'] = np.where(data['weights'] == 100, 'Peso Alto', 'Peso Bajo')
+
+plt.figure()
+
+plt.scatter(data['x'], data['y'], c=data['highlight'].map({'Peso Alto': 'red', 'Peso Bajo': 'gray'}), alpha=0.7, label='Datos')
+
+plt.plot(data['x'], data['pred_sin_ponderacion'], color='blue', linestyle='--', label='Sin Ponderación')
+plt.plot(data['x'], data['pred_con_ponderacion'], color='red', label='Con Ponderación')
+
+plt.title('Comparación de Regresión: Sin Ponderación vs. Con Ponderación')
+plt.xlabel('Variable Independiente (x)')
+plt.ylabel('Variable Dependiente (y)')
+
+plt.legend()
+        
+plt.show()
+''', language= 'python')
+
+np.random.seed(123)
+
+n = 100
+mean = 5
+sd_x = 2
+
+# Generar la variable 'x' con una distribución normal
+x = np.random.normal(loc=mean, scale=sd_x, size=n)
+
+# Generar la variable 'y' en base a la fórmula: y = 3 + 1.5 * x + ruido normal
+y = 3 + 1.5 * x + np.random.normal(scale=1, size=n)
+
+# Asignar pesos más extremos: 100 si x > 5, 0.01 en caso contrario
+weights = np.where(x > 5, 100, 0.01)
+
+# Ajustar el modelo sin ponderación
+model_sin_ponderacion = LinearRegression()
+model_sin_ponderacion.fit(x.reshape(-1, 1), y)
+
+# Ajustar el modelo con ponderación
+model_con_ponderacion = LinearRegression()
+model_con_ponderacion.fit(x.reshape(-1, 1), y, sample_weight=weights)
+
+# Predecir valores para ambos modelos
+pred_sin_ponderacion = model_sin_ponderacion.predict(x.reshape(-1, 1))
+pred_con_ponderacion = model_con_ponderacion.predict(x.reshape(-1, 1))
+
+# Crear un DataFrame con los datos y las predicciones
+data = pd.DataFrame({'x': x, 'y': y, 'weights': weights})
+data['pred_sin_ponderacion'] = pred_sin_ponderacion
+data['pred_con_ponderacion'] = pred_con_ponderacion
+
+# Crear una nueva variable para resaltar los puntos con pesos altos
+data['highlight'] = np.where(data['weights'] == 100, 'Peso Alto', 'Peso Bajo')
+
+# Graficar
+plt.figure(figsize=(10, 6))
+
+# Colorear los puntos según el tipo de peso
+plt.scatter(data['x'], data['y'], c=data['highlight'].map({'Peso Alto': 'red', 'Peso Bajo': 'gray'}), alpha=0.7, label='Datos')
+
+# Dibujar las líneas de regresión
+plt.plot(np.linspace(-1,10,100), model_sin_ponderacion.predict(np.linspace(-1,10,100).reshape(-1,1)), 
+        color='blue', linestyle='--', label='Sin Ponderación', linewidth=2)
+
+plt.plot(data['x'], data['pred_con_ponderacion'], color='red', label='Con Ponderación', linewidth=2)
+
+# Etiquetas y título
+plt.title('Comparación de Regresión: Sin Ponderación vs. Con Ponderación')
+plt.xlabel('Variable Independiente (x)')
+plt.ylabel('Variable Dependiente (y)')
+
+# Leyenda
+plt.legend()
+
+_, col1, _ = st.columns([0.1,0.2,0.1])
+
+with col1:
+        st.pyplot(plt)        
+        st.caption('''**Figure 1.** Se asignaron pesos mayores a los datos se asignarion si tienen un valor a 
+                   5 que son los que corresponden al color rojo''')
+
+
+st.code(f'''
 #Algunos atributos de esta clase son:
 
-model.coef_array -> shape (n_features, ) or (n_targets, n_features)
+model_con_ponderacion.coef_ -> shape (n_features, ) or (n_targets, n_features)
 #Este atributo almacena los coeficientes estimados de la regresión lineal, es decir, los 
 #valores de las pendientes para cada característica (variable independiente) en el modelo ajustado.
 
->>> array([1., 2.]) ### Solo los coeficientes, no el intercepto
+>>> {model_con_ponderacion.coef_} ### Solo los coeficientes, no el intercepto
 
-model.intercept_ -> float or array of shape (n_targets,)
+model_con_ponderacion.intercept_ -> float or array of shape (n_targets,)
 #Este es el término independiente o intercepto del modelo, Si fit_intercept = False, este valor se establece en 0.0
 
->>> 3.
+>>> {model_con_ponderacion.coef_}
 
-model.singular_ -> array of shape (min(X, y),)
+model_con_ponderacion.singular_ -> array of shape (min(X, y),)
 #Los valores singulares se pueden usar para detectar problemas de colinealidad entre las características. Si algunos de estos valores son 
 #cercanos a cero, puede indicar que una o más características son casi linealmente dependientes.
 
->>> array([1.61803399, 0.61803399])
+>>> {model_con_ponderacion.singular_}
 
 
-model.n_features_in_ -> int
+model_con_ponderacion.n_features_in_ -> int
 #Indica el número de características o variables independientes que el modelo ha visto durante el ajuste 
  
->>> 2
+>>> {model_con_ponderacion.n_features_in_}
         
-model.rank_ -> int
+model_con_ponderacion.rank_ -> int
 #Este atributo representa el rango de la matriz de características X, que es una medida de la independencia lineal de las columnas de X
 
->>> 2 #Si este numero es menor a el atributo .n_features_in_, indica multicolinealidad        
+>>> {model_con_ponderacion.rank_} #Si este numero es menor a el atributo .n_features_in_, indica multicolinealidad        
 ''',language = "python")
 
 ### 2 punto
@@ -119,15 +239,15 @@ ggplot(datos, aes(x = x, y = y)) +
   guides(size = guide_legend(title = "Pesos"))     
 ''')
 
-process1 = subprocess.Popen(["Rscript", "lm.R"], stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
-result1 = process1.communicate()
+#process1 = subprocess.Popen(["Rscript", "lm.R"], stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+#result1 = process1.communicate()
 image = Image.open('plot.png')
 
 _, col1, _ = st.columns([0.1,0.2,0.1])
 
 with col1:
         st.image(image,width=600)
-        st.caption('''**Figure 1.** Se asignaron pesos mayores a los datos se asignarion si tienen un valor a 
+        st.caption('''**Figure 2.** Se asignaron pesos mayores a los datos se asignarion si tienen un valor a 
                    5 que son los que corresponden al color rojo''')
 
 st.write('''<p style='font-size:25px;'><b>
@@ -161,7 +281,7 @@ ols.fit(X, y)
 y_pred_ols = ols.predict(X)
 
 # Modelo de Descenso del Gradiente (SGD)
-sgd = SGDRegressor(max_iter=1000, tol=1e-3, random_state=42)
+sgd = SGDRegressor(max_iter=30, tol=1e-3, random_state=42) ### Solo 10 iteraciones 
 sgd.fit(X, y)
 
 # Predicciones de Descenso del Gradiente
@@ -186,50 +306,10 @@ plt.legend()
 plt.show()
 ''',language='python')
 
-import numpy as np
-import matplotlib.pyplot as plt
-from sklearn.linear_model import LinearRegression, SGDRegressor
-from sklearn.datasets import make_regression
-from sklearn.metrics import mean_squared_error
-
-# Generar datos de ejemplo (con ruido)
-X, y = make_regression(n_samples=100, n_features=1, noise=10, random_state=42)
-
-# Modelo de Mínimos Cuadrados Ordinarios (OLS)
-ols = LinearRegression()
-ols.fit(X, y)
-
-# Predicciones de OLS
-y_pred_ols = ols.predict(X)
-
-# Modelo de Descenso del Gradiente (SGD)
-sgd = SGDRegressor(max_iter=1000, tol=1e-3, random_state=42)
-sgd.fit(X, y)
-
-# Predicciones de Descenso del Gradiente
-y_pred_sgd = sgd.predict(X)
-
-# Ordenar los datos para visualización
-sorted_indices = np.argsort(X.flatten())
-X_sorted = X[sorted_indices]
-y_pred_ols_sorted = y_pred_ols[sorted_indices]
-y_pred_sgd_sorted = y_pred_sgd[sorted_indices]
-
-# Visualizar los resultados
-plt.figure(figsize=(10, 8))
-plt.scatter(X, y, color='#C9C9C9', label='Datos reales')
-plt.plot(X_sorted, y_pred_ols_sorted, color='red', label='OLS - Mínimos Cuadrados', linestyle='-', linewidth=2)
-plt.plot(X_sorted, y_pred_sgd_sorted, color='blue', label='SGD - Descenso del Gradiente', linestyle='--', linewidth=2)
-plt.xlabel('X')
-plt.ylabel('y')
-plt.grid(True)
-plt.title('Comparación de Regresión: Mínimos Cuadrados vs. Descenso del Gradiente')
-plt.legend()
-
 _, col1, _ = st.columns([0.1,0.2,0.1])
 
 with col1:
-        st.pyplot(plt)
+        st.image("regresion_sgd_ols.gif")
 
 ### 4 punto
 st.write('''
@@ -239,8 +319,64 @@ st.write('''
         </b></p>
         ''', unsafe_allow_html=True)
 
-process2 = subprocess.Popen(["Rscript", "glmnet.r"], stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
-result2 = process2.communicate()
+
+st.code('''
+library(ggplot2)
+library(glmnet)
+
+# Generamos algunos datos de ejemplo
+set.seed(123)
+n <- 100
+x <- rnorm(n)
+y <- 3 * x + rnorm(n)
+
+# Preparar los datos para glmnet (convertimos a matriz)
+X <- as.matrix(cbind(1, x))  # Matriz de predictores (con columna de 1s para la intersección)
+
+# Ajuste con OLS (usamos la fórmula directa)
+ols_model <- lm(y ~ x)
+summary(ols_model)
+
+# Ajuste con glmnet para Ridge (regularización L2)
+ridge_model <- glmnet(X, y, alpha = 0)  # alpha = 0 para Ridge
+
+# Ajuste con glmnet para Lasso (regularización L1)
+lasso_model <- glmnet(X, y, alpha = 1)  # alpha = 1 para Lasso
+
+# Extraemos los coeficientes para lambda = 0 (sin regularización)
+coef(ridge_model, s = 0)
+coef(lasso_model, s = 0)
+
+# Graficamos los resultados
+df <- data.frame(x = x, y = y)
+
+# Predicciones con OLS, Ridge y Lasso
+pred_ols <- predict(ols_model, newdata = data.frame(x = x))
+pred_ridge <- predict(ridge_model, s = 0, newx = X)  # s = 0 para el valor de lambda = 0
+pred_lasso <- predict(lasso_model, s = 0, newx = X)  # s = 0 para el valor de lambda = 0
+
+# Graficamos los resultados con leyenda
+ggplot(df, aes(x = x, y = y)) +
+  geom_point(aes(color = "Datos reales"), alpha = 0.7) +
+  geom_line(aes(y = pred_ols, color = "Ajuste OLS"), linetype = "dashed",size = 1) +
+  geom_line(aes(y = pred_ridge, color = "Ajuste Ridge"), linetype = "solid",size = 1) +
+  geom_line(aes(y = pred_lasso, color = "Ajuste Lasso"), linetype = "dotdash",size = 1) +
+  labs(title = "Comparación de ajuste: OLS, Ridge y Lasso",
+       color = "Líneas") +
+  theme_minimal() +
+  scale_color_manual(values = c("Datos reales" = "gray", 
+                                "Ajuste OLS" = "blue", 
+                                "Ajuste Ridge" = "red", 
+                                "Ajuste Lasso" = "green")) + 
+  theme_minimal() +
+  theme(legend.position = "bottom") +
+  guides(size = guide_legend(title = "Pesos"))
+
+ggsave('glmnet.png')
+''')
+
+#process2 = subprocess.Popen(["Rscript", "glmnet.r"], stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+#result2 = process2.communicate()
 image2 = Image.open('glmnet.png')
 
 _, col1, _ = st.columns([0.1,0.2,0.1])
