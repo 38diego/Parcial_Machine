@@ -63,26 +63,72 @@ model_sin_ponderacion.fit(X.reshape(-1, 1), y)
 model_con_ponderacion = LinearRegression()
 model_con_ponderacion.fit(X.reshape(-1, 1), y, sample_weight=weights)
 
-data = pd.DataFrame({'x': X, 'y': y, 'weights': weights})
-data['pred_sin_ponderacion'] = pred_sin_ponderacion
-data['pred_con_ponderacion'] = pred_con_ponderacion
+data = pd.DataFrame({'weights': weights})
 
 data['highlight'] = np.where(data['weights'] == 100, 'Peso Alto', 'Peso Bajo')
 
-plt.figure()
+highlight_colors = data['highlight'].map({'Peso Alto': 'red', 'Peso Bajo': 'gray'})
 
-plt.scatter(data['x'], data['y'], c=data['highlight'].map({'Peso Alto': 'red', 'Peso Bajo': 'gray'}), alpha=0.7, label='Datos')
+#Graficamos
+fig = go.Figure()
 
-plt.plot(data['x'], data['pred_sin_ponderacion'], color='blue', linestyle='--', label='Sin Ponderación')
-plt.plot(data['x'], data['pred_con_ponderacion'], color='red', label='Con Ponderación')
+fig.add_trace(go.Scatter(
+    x=x, 
+    y=y,
+    mode='markers',
+    marker=dict(color=highlight_colors, opacity=0.7),
+    name='Datos'
+))
 
-plt.title('Comparación de Regresión: Sin Ponderación vs. Con Ponderación')
-plt.xlabel('Variable Independiente (x)')
-plt.ylabel('Variable Dependiente (y)')
+x_vals = np.linspace(-1, 10, 100)
+y_vals_sin_ponderacion = model_sin_ponderacion.predict(x_vals.reshape(-1, 1))
 
-plt.legend()
+fig.add_trace(go.Scatter(
+    x=x_vals,
+    y=y_vals_sin_ponderacion,
+    mode='lines',
+    line=dict(color='blue', dash='dash', width=2),
+    name='Sin Ponderación'
+))
+
+y_vals_con_ponderacion = model_sin_ponderacion.predict(x_vals.reshape(-1, 1))
+fig.add_trace(go.Scatter(
+    x=x_vals,
+    y=y_vals_con_ponderacion,
+    mode='lines',
+    line=dict(color='red', width=2),
+    name='Con Ponderación'
+))
+
+fig.update_layout(
+    title='Comparación de Regresión: Sin Ponderación vs. Con Ponderación',
+    title_font=dict(size=18, family='Arial, sans-serif'),
+    xaxis_title='Variable Independiente (x)',
+    yaxis_title='Variable Dependiente (y)',
+    legend=dict(
+        orientation='h',  
+        yanchor='bottom',
+        y=-0.2, 
+        xanchor='center',
+        x=0.5
+    ),
+    font=dict(family="Arial, sans-serif", size=12),
+    showlegend=True,
+    template="plotly_white",
+    height = 600,
+    xaxis=dict(
+            showgrid=True,  
+            gridcolor='lightgray',  
+            gridwidth=1
+        ),
+        yaxis=dict(
+            showgrid=True,  
+            gridcolor='lightgray',  
+            gridwidth=1
+        )
+)
         
-plt.show()
+fig.show()
 ''', language= 'python')
 
 np.random.seed(123)
@@ -224,8 +270,8 @@ st.write('''<p style='font-size:25px;'><b>
 
 st.markdown('''
         <p style='font-size:23px;'>
-        En R al usar lm() usa la tecnica de minimos cuadrados ordinarios cuando no se indican pesos en el parametro weights, 
-        Si este parametro tiene pesos, usa la tecnica de minimos cuadrados ponderados con los pesos indicados en este parametro, 
+        En R al usar lm() usa la tecnica de minimos cuadrados ordinarios (OLS) cuando no se indican pesos en el parametro weights, 
+        Si este parametro tiene pesos, usa la tecnica de minimos cuadrados ponderados (WLS) con los pesos indicados en este parametro, 
         El modelo no necesita de indicar un entrenamiento, al hacer model <- lm(...) y ajustar lo que queramos, el modelo se entrena 
         de inmediato y usa la tecnica de Minimos cuadrados si no se indicaron pesos, si se indicaron pesos se usa minimos cuadrados 
         ponderados con los respectivos pesos, un ejemplo de uso y aplicacion de los pesos son los siguientes:
@@ -239,26 +285,22 @@ n <- 100
 x <- rnorm(n, mean = 5, sd = 2)
 y <- 3 + 1.5 * x + rnorm(n, sd = 1)
 
-# Asignar pesos más extremos
-weights <- ifelse(x > 5, 100, 0.01)  # Pesos muy altos para x > 5, muy bajos para el resto
-
-# Ajustar el modelo sin ponderación
+weights <- ifelse(x > 5, 100, 0.01)
+        
+# Ajustar el modelo sin ponderación, tecnica = OLS
 modelo_sin_ponderacion <- lm(y ~ x)
 
-# Ajustar el modelo con ponderación
+# Ajustar el modelo con ponderación, tecnica = WLS
 modelo_con_ponderacion <- lm(y ~ x, weights = weights)
 
-# Crear un data frame con las predicciones de ambos modelos
 datos <- data.frame(x = x, y = y, weights = weights)
 datos$pred_sin_ponderacion <- predict(modelo_sin_ponderacion)
 datos$pred_con_ponderacion <- predict(modelo_con_ponderacion)
 
-# Crear una nueva variable para resaltar los puntos con pesos altos
 datos$highlight <- ifelse(datos$weights == 100, "Peso Alto", "Peso Bajo")
 
-# Graficar los datos y las dos líneas de regresión
 ggplot(datos, aes(x = x, y = y)) +
-  geom_point(aes(color = highlight), alpha = 0.7) +  # Colorear según el tipo de peso
+  geom_point(aes(color = highlight), alpha = 0.7) +  
   geom_line(aes(y = pred_sin_ponderacion, color = "Sin Ponderación"), size = 1, linetype = "dashed") +
   geom_line(aes(y = pred_con_ponderacion, color = "Con Ponderación"), size = 1) +
   labs(
@@ -270,14 +312,14 @@ ggplot(datos, aes(x = x, y = y)) +
   scale_color_manual(
     name = "",
     values = c("Sin Ponderación" = "blue", "Con Ponderación" = "red", "Peso Alto" = "red", "Peso Bajo" = "gray")
-  ) +  # Colorear las líneas y los puntos
+  ) + 
   theme_minimal() +
   theme(legend.position = "bottom") +
   guides(size = guide_legend(title = "Pesos"))     
 ''')
 
-process1 = subprocess.Popen(["Rscript", "lm.R"], stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
-result1 = process1.communicate()
+#process1 = subprocess.Popen(["Rscript", "lm.R"], stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+#result1 = process1.communicate()
 image = Image.open('plot.png')
 
 _, col1, _ = st.columns([0.1,0.2,0.1])
@@ -317,30 +359,92 @@ ols.fit(X, y)
 # Predicciones de OLS
 y_pred_ols = ols.predict(X)
 
-# Modelo de Descenso del Gradiente (SGD)
-sgd = SGDRegressor(max_iter=30, tol=1e-3, random_state=42) ### Solo 10 iteraciones 
-sgd.fit(X, y)
+sgd = SGDRegressor(max_iter=1, tol=1e-3, random_state=42, warm_start=True)
 
-# Predicciones de Descenso del Gradiente
-y_pred_sgd = sgd.predict(X)
+frames = []
 
-# Ordenar los datos para visualización
-sorted_indices = np.argsort(X.flatten())
-X_sorted = X[sorted_indices]
-y_pred_ols_sorted = y_pred_ols[sorted_indices]
-y_pred_sgd_sorted = y_pred_sgd[sorted_indices]
+for i in range(30):
+    sgd.partial_fit(X, y)  
+    y_pred_sgd = sgd.predict(X)
+    
+    frames.append(go.Frame(
+        data=[
+            go.Scatter(x=np.linspace(-3, 2, 100), 
+                       y=sgd.predict(np.linspace(-3, 2, 100).reshape(-1, 1)),
+                       mode='lines', 
+                       name=f'SGD - Iteración {i+1}', 
+                       line=dict(color='blue', width=2, dash='dash')),
+            
+            go.Scatter(x=np.linspace(-3, 2, 100), 
+                       y=ols.predict(np.linspace(-3, 2, 100).reshape(-1, 1)), 
+                       mode='lines', 
+                       name='OLS - Mínimos Cuadrados', 
+                       line=dict(color='red', width=2)),
+            
+            go.Scatter(x=X.flatten(), 
+                       y=y, 
+                       mode='markers', 
+                       name='Datos reales', 
+                       marker=dict(color='#C9C9C9', size=8, opacity=0.5))
+        ],
+        name=f'Frame {i+1}'
+    ))
 
-# Visualizar los resultados
-plt.figure(figsize=(8, 8))
-plt.scatter(X, y, color='#C9C9C9', label='Datos reales')
-plt.plot(X_sorted, y_pred_ols_sorted, color='red', label='OLS - Mínimos Cuadrados', linestyle='-', linewidth=2)
-plt.plot(X_sorted, y_pred_sgd_sorted, color='blue', label='SGD - Descenso del Gradiente', linestyle='--', linewidth=2)
-plt.xlabel('X')
-plt.ylabel('y')
-plt.grid(True)
-plt.title('Comparación de Regresión: Mínimos Cuadrados vs. Descenso del Gradiente')
-plt.legend()
-plt.show()
+fig = go.Figure(
+    frames=frames,
+    layout=go.Layout(
+        title="Comparación de ajuste: OLS vs SGD",
+        updatemenus=[dict(
+            type="buttons",
+            buttons=[dict(label="Play",
+                          method="animate",
+                          args=[None])],
+            
+            x=0.8,             
+            y=1.17,               
+            xanchor="center",  
+            yanchor="top")],
+        
+        legend=dict(
+            orientation="h",  
+            yanchor="bottom", 
+            y=-0.2,  
+            xanchor="center",  
+            x=0.5  
+        ),
+        height=600,
+        xaxis=dict(
+            showgrid=True,
+            gridcolor='lightgray',  
+            gridwidth=1  
+        ),
+        yaxis=dict(
+            showgrid=True, 
+            gridcolor='lightgray',  
+            gridwidth=1  
+        )
+    )
+)
+
+fig.add_trace(go.Scatter(x=np.linspace(-3, 2, 100), 
+                        y=sgd.predict(np.linspace(-3, 2, 100).reshape(-1, 1)),
+                        mode='lines', 
+                        name=f'SGD - Iteración {i+1}', 
+                        line=dict(color='blue', width=2, dash='dash')))
+
+fig.add_trace(go.Scatter(x=np.linspace(-3, 2, 100), 
+                        y=ols.predict(np.linspace(-3, 2, 100).reshape(-1, 1)),
+                        mode='lines', 
+                        name='OLS - Mínimos Cuadrados',
+                        line=dict(color='red', width=2)))
+
+fig.add_trace(go.Scatter(x=X.flatten(), 
+                        y=y, 
+                        mode='markers', 
+                        name='Datos reales', 
+                        marker=dict(color='#C9C9C9', size=8, opacity=0.5)))
+        
+fig.show()
 ''',language='python')
 
 X, y = make_regression(n_samples=100, n_features=1, noise=10, random_state=42)
@@ -386,12 +490,18 @@ for i in range(30):
 fig = go.Figure(
     frames=frames,
     layout=go.Layout(
-        title="Start Title",
+        title="Comparación de ajuste: OLS vs SGD",
         updatemenus=[dict(
             type="buttons",
             buttons=[dict(label="Play",
                           method="animate",
-                          args=[None])])],
+                          args=[None])],
+            
+            x=0.8,             # Posición en el eje x (0 es izquierda, 1 es derecha)
+            y=1.17,               # Posición en el eje y (0 es abajo, 1 es arriba)
+            xanchor="center",  # Ancla para la posición x (puede ser 'left', 'center', 'right')
+            yanchor="top")],
+        
         legend=dict(
             orientation="h",  # Establecer la orientación de la leyenda a horizontal
             yanchor="bottom",  # Anclar la leyenda al fondo
@@ -452,30 +562,21 @@ st.code('''
 library(ggplot2)
 library(glmnet)
 
-# Generamos algunos datos de ejemplo
 set.seed(123)
 n <- 100
 x <- rnorm(n)
 y <- 3 * x + rnorm(n)
 
-# Preparar los datos para glmnet (convertimos a matriz)
-X <- as.matrix(cbind(1, x))  # Matriz de predictores (con columna de 1s para la intersección)
-
-# Ajuste con OLS (usamos la fórmula directa)
+X <- as.matrix(cbind(1, x))
+        
+# Ajuste con OLS 
 ols_model <- lm(y ~ x)
-summary(ols_model)
 
-# Ajuste con glmnet para Ridge (regularización L2)
+# Ajuste con glmnet
 ridge_model <- glmnet(X, y, alpha = 0)  # alpha = 0 para Ridge
 
-# Ajuste con glmnet para Lasso (regularización L1)
 lasso_model <- glmnet(X, y, alpha = 1)  # alpha = 1 para Lasso
 
-# Extraemos los coeficientes para lambda = 0 (sin regularización)
-coef(ridge_model, s = 0)
-coef(lasso_model, s = 0)
-
-# Graficamos los resultados
 df <- data.frame(x = x, y = y)
 
 # Predicciones con OLS, Ridge y Lasso
@@ -483,7 +584,6 @@ pred_ols <- predict(ols_model, newdata = data.frame(x = x))
 pred_ridge <- predict(ridge_model, s = 0, newx = X)  # s = 0 para el valor de lambda = 0
 pred_lasso <- predict(lasso_model, s = 0, newx = X)  # s = 0 para el valor de lambda = 0
 
-# Graficamos los resultados con leyenda
 ggplot(df, aes(x = x, y = y)) +
   geom_point(aes(color = "Datos reales"), alpha = 0.7) +
   geom_line(aes(y = pred_ols, color = "Ajuste OLS"), linetype = "dashed",size = 1) +
@@ -499,12 +599,10 @@ ggplot(df, aes(x = x, y = y)) +
   theme_minimal() +
   theme(legend.position = "bottom") +
   guides(size = guide_legend(title = "Pesos"))
-
-ggsave('glmnet.png')
 ''')
 
-process2 = subprocess.Popen(["Rscript", "glmnet.r"], stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
-result2 = process2.communicate()
+#process2 = subprocess.Popen(["Rscript", "glmnet.r"], stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+#result2 = process2.communicate()
 image2 = Image.open('glmnet.png')
 
 _, col1, _ = st.columns([0.1,0.2,0.1])

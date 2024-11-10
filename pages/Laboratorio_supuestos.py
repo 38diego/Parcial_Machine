@@ -6,6 +6,7 @@ import statsmodels.api as sm
 from statsmodels.stats.outliers_influence import variance_inflation_factor
 import matplotlib.pyplot as plt
 import seaborn as sns
+import scipy.stats as stats
 
 st.markdown('# :red[Laboratorio de supuestos]')
 
@@ -124,26 +125,85 @@ st.write('''<p style='font-size:23px;'><b>
         unsafe_allow_html=True)
 
 st.code('''
-residuals_sm = model_sm.resid
+mean_residuals = np.mean(residuals_sm)
 
-plt.figure(figsize=(10, 6))
-sns.histplot(residuals_sm)
-plt.axvline(np.mean(residuals_sm), color='r', linestyle='--', label='Media residuos')
-plt.xlabel("Predicted values")
-plt.ylabel("Residuals")
-plt.title("Residuals vs. Predicted values")
-plt.legend()
-plt.show()
+fig = go.Figure()
+
+fig.add_trace(go.Histogram(
+    x=residuals_sm,
+    nbinsx=30,
+    name="Residuals",
+    marker=dict(color="lightblue"),
+    hovertemplate="<b>Intervalo</b>: %{x}<br><b>Cantidad</b>: %{y}<extra></extra>"
+))
+
+fig.add_trace(go.Scatter(
+    x=[mean_residuals, mean_residuals],
+    y=[0, 95],
+    mode="lines",
+    line=dict(color="red", dash="dash"),
+    name="Media residuos"
+))
+
+fig.update_layout(
+    title="Distribucion de los residuos",
+    xaxis_title="Predicted values",
+    yaxis_title="Residuals",
+    legend=dict(
+        orientation="h",      
+        yanchor="top",        
+        y=-0.2,               
+        xanchor="center",
+        x=0.5
+    ),
+    bargap=0.1,
+    height = 600
+)
 ''')
 
-plt.figure(figsize=(10, 6))
-sns.histplot(residuals_sm)
-plt.axvline(np.mean(residuals_sm), color='r', linestyle='--', label='Media residuos')
-plt.xlabel("Predicted values")
-plt.ylabel("Residuals")
-plt.title("Residuals vs. Predicted values")
-plt.legend()
-st.pyplot(plt)
+mean_residuals = np.mean(residuals_sm)
+
+# Crear el histograma con go
+fig = go.Figure()
+
+# Agregar el histograma de los residuos
+fig.add_trace(go.Histogram(
+    x=residuals_sm,
+    nbinsx=30,
+    name="Residuals",
+    marker=dict(color="lightblue"),
+    hovertemplate="<b>Intervalo</b>: %{x}<br><b>Cantidad</b>: %{y}<extra></extra>"
+))
+
+# Agregar la línea vertical para la media de los residuos
+fig.add_trace(go.Scatter(
+    x=[mean_residuals, mean_residuals],
+    y=[0, 95],
+    mode="lines",
+    line=dict(color="red", dash="dash"),
+    name="Media residuos"
+))
+
+# Actualizar el diseño del gráfico
+fig.update_layout(
+    title="Distribucion de los residuos",
+    xaxis_title="Predicted values",
+    yaxis_title="Residuals",
+    legend=dict(
+        orientation="h",      # Leyenda en orientación horizontal
+        yanchor="top",        # Ancla la parte superior de la leyenda
+        y=-0.2,               # Coloca la leyenda ligeramente debajo del gráfico
+        xanchor="center",
+        x=0.5
+    ),
+    bargap=0.1,
+    height = 600
+)
+
+_, col1, _ = st.columns([0.1, 0.2, 0.1])
+
+with col1:
+    st.plotly_chart(fig)
 
 st.write('''<p style='font-size:23px;'><b>
         (b) Supuesto de homocedasticidad:</b> Verificar si los residuos muestran una varianza constante a lo largo de
@@ -154,24 +214,84 @@ st.write('''<p style='font-size:23px;'><b>
 st.code('''
 y_train_pred_sm = model_sm.predict(X_train_sm)
         
-plt.figure(figsize=(10, 6))
-sns.scatterplot(x=y_train_pred_sm, y=residuals_sm)
-plt.axhline(y=np.mean(residuals_sm), color='r', linestyle='--', label='Media residuos')
-plt.xlabel("Predicted values")
-plt.ylabel("Residuals")
-plt.title("Residuals vs. Predicted values")
-plt.legend()
-plt.show()
+fig = go.Figure()
+
+# Agregar la gráfica de dispersión
+fig.add_trace(go.Scatter(
+    x=y_train_pred_sm,
+    y=residuals_sm,
+    mode="markers",
+    marker=dict(color="lightblue", size=7),
+    name="Residuals"
+))
+
+# Agregar la línea horizontal para la media de los residuos
+fig.add_trace(go.Scatter(
+    x=[min(y_train_pred_sm), max(y_train_pred_sm)],
+    y=[mean_residuals, mean_residuals],
+    mode="lines",
+    line=dict(color="red", dash="dash"),
+    name="Media residuos"
+))
+
+# Actualizar el diseño del gráfico y colocar la leyenda en la parte inferior
+fig.update_layout(
+    title="Residuals vs. Predicted values",
+    xaxis_title="Predicted values",
+    yaxis_title="Residuals",
+    legend=dict(
+        orientation="h",
+        yanchor="top",
+        y=-0.2,
+        xanchor="center",
+        x=0.5
+    ),
+    height = 600
+)
+    
+fig.show()
 ''')
 
-plt.figure(figsize=(10, 6))
-sns.scatterplot(x=y_train_pred_sm, y=residuals_sm)
-plt.axhline(y=np.mean(residuals_sm), color='r', linestyle='--', label='Media residuos')
-plt.xlabel("Predicted values")
-plt.ylabel("Residuals")
-plt.title("Residuals vs. Predicted values")
-plt.legend()
-st.pyplot(plt)
+fig = go.Figure()
+
+# Agregar la gráfica de dispersión
+fig.add_trace(go.Scatter(
+    x=y_train_pred_sm,
+    y=residuals_sm,
+    mode="markers",
+    marker=dict(color="lightblue", size=7),
+    name="Residuals",
+    hovertemplate="<b>Valor:</b> %{x}<br><b>Residuo:</b> %{y}<extra></extra>"
+))
+
+# Agregar la línea horizontal para la media de los residuos
+fig.add_trace(go.Scatter(
+    x=[min(y_train_pred_sm), max(y_train_pred_sm)],
+    y=[mean_residuals, mean_residuals],
+    mode="lines",
+    line=dict(color="red", dash="dash"),
+    name="Media residuos"
+))
+
+# Actualizar el diseño del gráfico y colocar la leyenda en la parte inferior
+fig.update_layout(
+    title="Residuals vs. Predicted values",
+    xaxis_title="Predicted values",
+    yaxis_title="Residuals",
+    legend=dict(
+        orientation="h",
+        yanchor="top",
+        y=-0.2,
+        xanchor="center",
+        x=0.5
+    ),
+    height = 600
+)
+
+_, col1, _ = st.columns([0.1, 0.2, 0.1])
+
+with col1:
+    st.plotly_chart(fig)
 
 st.write('''<p style='font-size:23px;'><b>
         (c) Supuesto de independencia:</b> Graficar los residuos en función del orden de las 
@@ -180,24 +300,91 @@ st.write('''<p style='font-size:23px;'><b>
         unsafe_allow_html=True)
 
 st.code('''
-plt.figure(figsize=(10, 6))
-plt.plot(residuals_sm, marker='o', linestyle='-', color='b')
-plt.axhline(y=np.mean(residuals_sm), color='r', linestyle='--', label='Media residuos')
-plt.xlabel("Predicted values")
-plt.ylabel("Residuals")
-plt.title("Residuals vs. Predicted values")
-plt.legend()
-plt.show()
+fig = go.Figure()
+
+fig.add_trace(go.Scatter(
+    x=np.arange(len(residuals_sm)),
+    y=residuals_sm,
+    mode="markers+lines",  # Marcas y líneas
+    marker=dict(color="lightblue"),
+    name="Residuals",
+    hovertemplate="<b>Valor:</b> %{x}<br><b>Residuo:</b> %{y}<extra></extra>"
+))
+
+fig.add_trace(go.Scatter(
+    x=[0, len(residuals_sm)-1],
+    y=[mean_residuals, mean_residuals],
+    mode="lines",
+    line=dict(color="red", dash="dash"),
+    name="Media residuos"
+))
+
+fig.update_layout(
+    title="Residuals vs. Predicted values",
+    xaxis_title="Predicted values",
+    yaxis_title="Residuals",
+    legend=dict(
+        orientation="h",
+        yanchor="top",
+        y=-0.2,
+        xanchor="center",
+        x=0.5
+    ),
+    height = 500
+)
+        
+fig.show()
 ''')
 
-plt.figure(figsize=(10, 6))
-plt.plot(residuals_sm, marker='o', linestyle='-', color='b')
-plt.axhline(y=np.mean(residuals_sm), color='r', linestyle='--', label='Media residuos')
-plt.xlabel("Predicted values")
-plt.ylabel("Residuals")
-plt.title("Residuals vs. Predicted values")
-plt.legend()
-st.pyplot(plt)
+import plotly.graph_objects as go
+import numpy as np
+
+# Supón que residuals_sm es tu array de residuos
+# residuals_sm = ...
+
+# Calcular la media de los residuos
+mean_residuals = np.mean(residuals_sm)
+
+# Crear el gráfico con Plotly
+fig = go.Figure()
+
+# Agregar la gráfica de los residuos con puntos
+fig.add_trace(go.Scatter(
+    x=np.arange(len(residuals_sm)),
+    y=residuals_sm,
+    mode="markers+lines",  # Marcas y líneas
+    marker=dict(color="lightblue"),
+    name="Residuals",
+    hovertemplate="<b>Valor:</b> %{x}<br><b>Residuo:</b> %{y}<extra></extra>"
+))
+
+# Agregar la línea horizontal para la media de los residuos
+fig.add_trace(go.Scatter(
+    x=[0, len(residuals_sm)-1],
+    y=[mean_residuals, mean_residuals],
+    mode="lines",
+    line=dict(color="red", dash="dash"),
+    name="Media residuos"
+))
+
+# Actualizar el diseño del gráfico y colocar la leyenda en la parte inferior
+fig.update_layout(
+    title="Residuals vs. Predicted values",
+    xaxis_title="Predicted values",
+    yaxis_title="Residuals",
+    legend=dict(
+        orientation="h",
+        yanchor="top",
+        y=-0.2,
+        xanchor="center",
+        x=0.5
+    ),
+    height = 500
+)
+
+# Mostrar el gráfico en Streamlit
+st.plotly_chart(fig)
+
 
 st.write('''<p style='font-size:23px;'><b>
         (D) Supuesto de normalidad:</b> Realizar un gráfico Q-Q (quantile-quantile) para comparar 
@@ -206,16 +393,86 @@ st.write('''<p style='font-size:23px;'><b>
         unsafe_allow_html=True)
 
 st.code('''
-plt.figure(figsize=(10, 6))
-sm.qqplot(residuals_sm, line='s',)
-plt.title("Q-Q plot of residuals")
-plt.show()
+fig = go.Figure()
+
+probplot = stats.probplot(residuals_sm, dist="norm", plot=None)
+
+fig.add_trace(go.Scatter(
+    x=probplot[0][0],  
+    y=probplot[0][1],  
+    mode='markers',
+    marker=dict(color="blue", size=5),
+    name="Cuantiles"
+))
+
+fig.add_trace(go.Scatter(
+    x=[min(probplot[0][0]), max(probplot[0][0])],
+    y=[min(probplot[0][0]), max(probplot[0][0])],
+    mode='lines',
+    line=dict(color='red', dash='dash'),
+    name="Línea de referencia"
+))
+
+fig.update_layout(
+    title="Q-Q plot of residuals",
+    xaxis_title="Cuantiles Teóricos",
+    yaxis_title="Cuantiles Observados",
+    legend=dict(
+        orientation="h",  
+        yanchor="top",    
+        y=-0.2,           
+        xanchor="center", 
+        x=0.5
+    ),
+    height = 600
+)
 ''')
 
-plt.figure(figsize=(10, 6))
-sm.qqplot(residuals_sm, line='s',)
-plt.title("Q-Q plot of residuals")
-st.pyplot(plt)
+fig = go.Figure()
+
+# Q-Q plot teórico y observado usando scipy.stats.probplot
+probplot = stats.probplot(residuals_sm, dist="norm", plot=None)
+
+# Agregar los puntos del Q-Q plot
+fig.add_trace(go.Scatter(
+    x=probplot[0][0],  # Cuantiles teóricos
+    y=probplot[0][1],  # Cuantiles observados
+    mode='markers',
+    marker=dict(color="lightblue", size=7),
+    name="Cuantiles"
+))
+
+# Agregar la línea de referencia para una distribución normal
+fig.add_trace(go.Scatter(
+    x=[min(probplot[0][0]), max(probplot[0][0])],
+    y=[min(probplot[0][0]), max(probplot[0][0])],
+    mode='lines',
+    line=dict(color='red', dash='dash'),
+    name="Línea de referencia"
+))
+
+# Actualizar el diseño y colocar la leyenda en la parte inferior
+fig.update_layout(
+    title="Q-Q plot of residuals",
+    xaxis_title="Cuantiles Teóricos",
+    yaxis_title="Cuantiles Observados",
+    legend=dict(
+        orientation="h",  # Leyenda en orientación horizontal
+        yanchor="top",    # Ancla la parte superior de la leyenda
+        y=-0.2,           # Coloca la leyenda ligeramente debajo del gráfico
+        xanchor="center", # Centra la leyenda
+        x=0.5
+    ),
+    height = 600
+)
+
+col1, col2 = st.columns([0.6,0.4])
+
+with col1:
+    st.plotly_chart(fig)
+
+with col2:
+    st.write("Tabla para poner distitnas pruebas de normalidad")
 
 st.write('''<p style='font-size:23px;'><b>
         (e) Supuesto de ausencia de multicolinealidad:</b> Calcular el factor de inflación de la varianza (VIF) para
@@ -223,16 +480,79 @@ st.write('''<p style='font-size:23px;'><b>
         </p>''', 
         unsafe_allow_html=True)
 
+st.code('''
+vif_data = pd.DataFrame()
+vif_data["Feature"] = X.columns
+vif_data["VIF"] = [variance_inflation_factor(X.values, i) for i in range(X.shape[1])]
+print(vif_data)
 
-col1, col2 = st.columns(2)
+filtered_corr = train_data.corr().T
 
-with col1:
+mask = np.triu(np.ones_like(filtered_corr, dtype=bool), k=0)
+
+masked_corr = np.where(mask, np.nan, filtered_corr)
+
+text_array = np.array([f'{filtered_corr.columns[i]} vs {filtered_corr.columns[j]}: {filtered_corr.iloc[i, j]:.2f}'
+for i in range(len(filtered_corr.columns)) for j in range(len(filtered_corr.columns))])
+masked_text = np.where(mask, '', text_array.reshape(filtered_corr.shape))
+
+fig = go.Figure(data=go.Heatmap(
+    z=masked_corr,
+    x=filtered_corr.columns,
+    y=filtered_corr.columns,
+    colorscale='RdBu',
+    zmin=-1,
+    zmax=1,
+    colorbar=dict(title='Correlation'),
+    showscale=True,
+    text=masked_text,
+    texttemplate='',  
+    hoverinfo='text' 
+))
+
+fig.update_layout(
+    title="Matriz de Correlación (Parte Inferior)",
+    height=600,
+    xaxis=dict(
+    tickmode='array',
+    tickvals=list(range(len(filtered_corr.columns))),
+    ticktext=filtered_corr.columns,
+    title='Variables'
+    ),
+    yaxis=dict(
+    tickmode='array',
+    tickvals=list(range(len(filtered_corr.columns))),
+    ticktext=filtered_corr.columns,
+    title='Variables',
+    autorange='reversed')
+)
+
+fig.show()
+''')
+
+
+col1, col2 = st.columns([0.6,0.4])
+
+with col2:
+    st.write("")
+    st.write("")
+    st.write("")
+    st.write("")
     vif_data = pd.DataFrame()
     vif_data["Feature"] = X.columns
     vif_data["VIF"] = [variance_inflation_factor(X.values, i) for i in range(X.shape[1])]
-    st.table(vif_data)
 
-with col2:
+    def highlight_vif(val):
+        color = '#ED8181' if val > 10 else '#B0ED8B'
+        return f'background-color: {color}'
+
+    # Aplicar el estilo solo en la columna 'VIF' y mostrar la tabla en Streamlit
+    styled_vif_data = vif_data.style.applymap(highlight_vif, subset=["VIF"])
+    st.table(styled_vif_data)
+
+#'background-color: #B0ED8B' if val < 0.05 else 'background-color: #ED8181'
+
+with col1:
     filtered_corr = train_data.corr().T
             
     # Crear una máscara para la parte superior diagonal y la diagonal principal
@@ -263,7 +583,7 @@ with col2:
 
     fig5.update_layout(
         title="Matriz de Correlación (Parte Inferior)",
-        height=500,
+        height=600,
         xaxis=dict(
             tickmode='array',
             tickvals=list(range(len(filtered_corr.columns))),

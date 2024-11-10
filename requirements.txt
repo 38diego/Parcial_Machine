@@ -5,3 +5,4 @@ streamlit_navigation_bar
 statsmodels
 seaborn
 plotly
+scipy
