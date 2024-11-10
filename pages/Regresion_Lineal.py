@@ -1,13 +1,14 @@
 import streamlit as st
 import subprocess
+import plotly.graph_objects as go
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 from sklearn.linear_model import LinearRegression
 from streamlit_navigation_bar import st_navbar
 from PIL import Image
-
-#st.set_page_config(layout="wide")
+from sklearn.datasets import make_regression
+from sklearn.linear_model import LinearRegression, SGDRegressor
 
 st.markdown('# :red[Métodos y parámetros en regresión lineal]')
 
@@ -107,42 +108,78 @@ model_sin_ponderacion.fit(x.reshape(-1, 1), y)
 model_con_ponderacion = LinearRegression()
 model_con_ponderacion.fit(x.reshape(-1, 1), y, sample_weight=weights)
 
-# Predecir valores para ambos modelos
-pred_sin_ponderacion = model_sin_ponderacion.predict(x.reshape(-1, 1))
-pred_con_ponderacion = model_con_ponderacion.predict(x.reshape(-1, 1))
-
 # Crear un DataFrame con los datos y las predicciones
-data = pd.DataFrame({'x': x, 'y': y, 'weights': weights})
-data['pred_sin_ponderacion'] = pred_sin_ponderacion
-data['pred_con_ponderacion'] = pred_con_ponderacion
+data = pd.DataFrame({'weights': weights})
 
 # Crear una nueva variable para resaltar los puntos con pesos altos
 data['highlight'] = np.where(data['weights'] == 100, 'Peso Alto', 'Peso Bajo')
 
-# Graficar
-plt.figure(figsize=(10, 6))
-
-# Colorear los puntos según el tipo de peso
-plt.scatter(data['x'], data['y'], c=data['highlight'].map({'Peso Alto': 'red', 'Peso Bajo': 'gray'}), alpha=0.7, label='Datos')
-
-# Dibujar las líneas de regresión
-plt.plot(np.linspace(-1,10,100), model_sin_ponderacion.predict(np.linspace(-1,10,100).reshape(-1,1)), 
-        color='blue', linestyle='--', label='Sin Ponderación', linewidth=2)
-
-plt.plot(data['x'], data['pred_con_ponderacion'], color='red', label='Con Ponderación', linewidth=2)
-
-# Etiquetas y título
-plt.title('Comparación de Regresión: Sin Ponderación vs. Con Ponderación')
-plt.xlabel('Variable Independiente (x)')
-plt.ylabel('Variable Dependiente (y)')
-
-# Leyenda
-plt.legend()
-
 _, col1, _ = st.columns([0.1,0.2,0.1])
 
+highlight_colors = data['highlight'].map({'Peso Alto': 'red', 'Peso Bajo': 'gray'})
+
+# Crear la figura con Plotly
+fig = go.Figure()
+
+# Agregar la dispersión de los puntos
+fig.add_trace(go.Scatter(
+    x=x, 
+    y=y,
+    mode='markers',
+    marker=dict(color=highlight_colors, opacity=0.7),
+    name='Datos'
+))
+
+# Agregar la línea de regresión sin ponderación
+x_vals = np.linspace(-1, 10, 100)
+y_vals_sin_ponderacion = model_sin_ponderacion.predict(x_vals.reshape(-1, 1))
+fig.add_trace(go.Scatter(
+    x=x_vals,
+    y=y_vals_sin_ponderacion,
+    mode='lines',
+    line=dict(color='blue', dash='dash', width=2),
+    name='Sin Ponderación'
+))
+
+# Agregar la línea de regresión con ponderación
+fig.add_trace(go.Scatter(
+    x=x_vals,
+    y=model_con_ponderacion.predict(x_vals.reshape(-1, 1)),
+    mode='lines',
+    line=dict(color='red', width=2),
+    name='Con Ponderación'
+))
+
+fig.update_layout(
+    title='Comparación de Regresión: Sin Ponderación vs. Con Ponderación',
+    title_font=dict(size=18, family='Arial, sans-serif'),
+    xaxis_title='Variable Independiente (x)',
+    yaxis_title='Variable Dependiente (y)',
+    legend=dict(
+        orientation='h',  # Orientación horizontal
+        yanchor='bottom',
+        y=-0.2,  # Colocar debajo del gráfico
+        xanchor='center',
+        x=0.5
+    ),
+    font=dict(family="Arial, sans-serif", size=12),
+    showlegend=True,
+    template="plotly_white",
+    height = 600,
+    xaxis=dict(
+            showgrid=True,  # Mostrar la grilla en el eje X
+            gridcolor='lightgray',  # Color de la grilla
+            gridwidth=1  # Grosor de la línea de la grilla
+        ),
+        yaxis=dict(
+            showgrid=True,  # Mostrar la grilla en el eje Y
+            gridcolor='lightgray',  # Color de la grilla
+            gridwidth=1  # Grosor de la línea de la grilla
+        )
+)
+
 with col1:
-        st.pyplot(plt)        
+        st.plotly_chart(fig)        
         st.caption('''**Figure 1.** Se asignaron pesos mayores a los datos se asignarion si tienen un valor a 
                    5 que son los que corresponden al color rojo''')
 
@@ -239,8 +276,8 @@ ggplot(datos, aes(x = x, y = y)) +
   guides(size = guide_legend(title = "Pesos"))     
 ''')
 
-#process1 = subprocess.Popen(["Rscript", "lm.R"], stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
-#result1 = process1.communicate()
+process1 = subprocess.Popen(["Rscript", "lm.R"], stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+result1 = process1.communicate()
 image = Image.open('plot.png')
 
 _, col1, _ = st.columns([0.1,0.2,0.1])
@@ -306,10 +343,101 @@ plt.legend()
 plt.show()
 ''',language='python')
 
-_, col1, _ = st.columns([0.1,0.2,0.1])
+X, y = make_regression(n_samples=100, n_features=1, noise=10, random_state=42)
+
+ols = LinearRegression()
+ols.fit(X, y)
+y_pred_ols = ols.predict(X)
+
+sgd = SGDRegressor(max_iter=1, tol=1e-3, random_state=42, warm_start=True)
+
+frames = []
+
+for i in range(30):
+    sgd.partial_fit(X, y)  # Ajusta una iteración
+    y_pred_sgd = sgd.predict(X)
+    
+    frames.append(go.Frame(
+        data=[
+            # Añadir las líneas de SGD y OLS primero
+            go.Scatter(x=np.linspace(-3, 2, 100), 
+                       y=sgd.predict(np.linspace(-3, 2, 100).reshape(-1, 1)),
+                       mode='lines', 
+                       name=f'SGD - Iteración {i+1}', 
+                       line=dict(color='blue', width=2, dash='dash')),
+            
+            go.Scatter(x=np.linspace(-3, 2, 100), 
+                       y=ols.predict(np.linspace(-3, 2, 100).reshape(-1, 1)), 
+                       mode='lines', 
+                       name='OLS - Mínimos Cuadrados', 
+                       line=dict(color='red', width=2)),
+            
+            # Añadir los puntos después de las líneas para que queden detrás
+            go.Scatter(x=X.flatten(), 
+                       y=y, 
+                       mode='markers', 
+                       name='Datos reales', 
+                       marker=dict(color='#C9C9C9', size=8, opacity=0.5))
+        ],
+        name=f'Frame {i+1}'
+    ))
+
+# Crear la figura
+fig = go.Figure(
+    frames=frames,
+    layout=go.Layout(
+        title="Start Title",
+        updatemenus=[dict(
+            type="buttons",
+            buttons=[dict(label="Play",
+                          method="animate",
+                          args=[None])])],
+        legend=dict(
+            orientation="h",  # Establecer la orientación de la leyenda a horizontal
+            yanchor="bottom",  # Anclar la leyenda al fondo
+            y=-0.2,  # Desplazar la leyenda hacia abajo
+            xanchor="center",  # Centrar la leyenda
+            x=0.5  # Centrar la leyenda horizontalmente
+        ),
+        height=600,
+        xaxis=dict(
+            showgrid=True,  # Mostrar la grilla en el eje X
+            gridcolor='lightgray',  # Color de la grilla
+            gridwidth=1  # Grosor de la línea de la grilla
+        ),
+        yaxis=dict(
+            showgrid=True,  # Mostrar la grilla en el eje Y
+            gridcolor='lightgray',  # Color de la grilla
+            gridwidth=1  # Grosor de la línea de la grilla
+        )
+    )
+)
+
+# Añadir las líneas de SGD y OLS al gráfico fuera de la animación
+fig.add_trace(go.Scatter(x=np.linspace(-3, 2, 100), 
+                        y=sgd.predict(np.linspace(-3, 2, 100).reshape(-1, 1)),
+                        mode='lines', 
+                        name=f'SGD - Iteración {i+1}', 
+                        line=dict(color='blue', width=2, dash='dash')))
+
+fig.add_trace(go.Scatter(x=np.linspace(-3, 2, 100), 
+                        y=ols.predict(np.linspace(-3, 2, 100).reshape(-1, 1)),
+                        mode='lines', 
+                        name='OLS - Mínimos Cuadrados',
+                        line=dict(color='red', width=2)))
+
+fig.add_trace(go.Scatter(x=X.flatten(), 
+                        y=y, 
+                        mode='markers', 
+                        name='Datos reales', 
+                        marker=dict(color='#C9C9C9', size=8, opacity=0.5)))
+
+# Mostrar el gráfico en Streamlit
+_, col1, _ = st.columns([0.1, 0.2, 0.1])
 
 with col1:
-        st.image("regresion_sgd_ols.gif")
+    st.plotly_chart(fig)
+
 
 ### 4 punto
 st.write('''
@@ -375,8 +503,8 @@ ggplot(df, aes(x = x, y = y)) +
 ggsave('glmnet.png')
 ''')
 
-#process2 = subprocess.Popen(["Rscript", "glmnet.r"], stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
-#result2 = process2.communicate()
+process2 = subprocess.Popen(["Rscript", "glmnet.r"], stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+result2 = process2.communicate()
 image2 = Image.open('glmnet.png')
 
 _, col1, _ = st.columns([0.1,0.2,0.1])
@@ -483,11 +611,13 @@ model <- lm(
         #los coeficientes del modelo, lo que significa que no se estima un coeficiente para offset; simplemente se ajusta el modelo con este 
         #término como parte de la ecuación.
         )
-''', language='R')
+''', language="python")
 
-st.write("<p style='font-size:23px;'>El modelo no necesita de indicar un entrenamiento, al hacer model <- lm(...) y ajustar lo que queramos,\
-        el modelo se entrena de inmediato y usa la tecnica de Minimos cuadrados si no se indicaron pesos, si se indicaron pesos se usa minimos \
-        cuadrados ponderados con los respectivos</p>", 
+st.write('''<p style='font-size:23px;'>
+        El modelo no necesita de indicar un entrenamiento, al hacer model <- lm(...) y ajustar lo que queramos,
+        el modelo se entrena de inmediato y usa la tecnica de Minimos cuadrados si no se indicaron pesos, si se indicaron pesos se usa minimos
+        cuadrados ponderados con los respectivos
+        </p>''', 
         unsafe_allow_html=True)
 
 ### 7 punto
@@ -570,7 +700,8 @@ glmnet(
         #Limita el número máximo de variables que pueden ser no cero en el modelo.
 
         exclude: default NULL
-        #Índices de las variables que deben ser excluidas del modelo. Esto es equivalente a aplicar un factor de penalización infinito a esas variables.        
+        #Índices de las variables que deben ser excluidas del modelo. Esto es equivalente a aplicar un factor 
+        #de penalización infinito a esas variables.        
 
         penalty.factor: default rep(1, nvars)
         #Factores de penalización separados que se pueden aplicar a cada coeficiente. Esto permite diferenciar el decrecimiento de las variables. 
@@ -586,13 +717,13 @@ glmnet(
         Número máximo de pasadas sobre los datos para cada valor de lambda
 
         type.gaussian: default ifelse(nvars < 500, "covariance", "naive")
-        #Tipo de algoritmo para la familia "gaussian". "covariance" es más rápido para un número pequeño de variables, mientras que "naive" es más 
-        #eficiente cuando hay muchas más variables que observaciones.
+        #Tipo de algoritmo para la familia "gaussian". "covariance" es más rápido para un número pequeño de variables, 
+        #mientras que "naive" es más eficiente cuando hay muchas más variables que observaciones.
 
         type.logistic: default c("Newton", "modified.Newton")
         #Si se debe usar el algoritmo de Newton para ajustar un modelo logístico.
         )
-''',language="R")
+''',language="python")
 
 ### 8 punto
 st.write('''<p style='font-size:25px;'><b>
