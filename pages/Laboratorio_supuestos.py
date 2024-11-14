@@ -118,102 +118,17 @@ st.write('''<p style='font-size:23px;'>
         </p>''', 
         unsafe_allow_html=True)
 
-st.write('''<p style='font-size:23px;'><b>
-        (a) Supuesto de media cero:</b> Graficar los residuos ei contra los valores predichos yi y comprobar si los residuos
-        están distribuidos aleatoriamente alrededor de la línea de cero. 
-        </p>''', 
-        unsafe_allow_html=True)
-
-st.code('''
-mean_residuals = np.mean(residuals_sm)
-
-fig = go.Figure()
-
-fig.add_trace(go.Histogram(
-    x=residuals_sm,
-    nbinsx=30,
-    name="Residuals",
-    marker=dict(color="lightblue"),
-    hovertemplate="<b>Intervalo</b>: %{x}<br><b>Cantidad</b>: %{y}<extra></extra>"
-))
-
-fig.add_trace(go.Scatter(
-    x=[mean_residuals, mean_residuals],
-    y=[0, 95],
-    mode="lines",
-    line=dict(color="red", dash="dash"),
-    name="Media residuos"
-))
-
-fig.update_layout(
-    title="Distribucion de los residuos",
-    xaxis_title="Predicted values",
-    yaxis_title="Residuals",
-    legend=dict(
-        orientation="h",      
-        yanchor="top",        
-        y=-0.2,               
-        xanchor="center",
-        x=0.5
-    ),
-    bargap=0.1,
-    height = 600
-)
-''')
-
-mean_residuals = np.mean(residuals_sm)
-
-# Crear el histograma con go
-fig = go.Figure()
-
-# Agregar el histograma de los residuos
-fig.add_trace(go.Histogram(
-    x=residuals_sm,
-    nbinsx=30,
-    name="Residuals",
-    marker=dict(color="lightblue"),
-    hovertemplate="<b>Intervalo</b>: %{x}<br><b>Cantidad</b>: %{y}<extra></extra>"
-))
-
-# Agregar la línea vertical para la media de los residuos
-fig.add_trace(go.Scatter(
-    x=[mean_residuals, mean_residuals],
-    y=[0, 95],
-    mode="lines",
-    line=dict(color="red", dash="dash"),
-    name="Media residuos"
-))
-
-# Actualizar el diseño del gráfico
-fig.update_layout(
-    title="Distribucion de los residuos",
-    xaxis_title="Predicted values",
-    yaxis_title="Residuals",
-    legend=dict(
-        orientation="h",      # Leyenda en orientación horizontal
-        yanchor="top",        # Ancla la parte superior de la leyenda
-        y=-0.2,               # Coloca la leyenda ligeramente debajo del gráfico
-        xanchor="center",
-        x=0.5
-    ),
-    bargap=0.1,
-    height = 600
-)
-
-_, col1, _ = st.columns([0.1, 0.2, 0.1])
-
-with col1:
-    st.plotly_chart(fig)
 
 st.write('''<p style='font-size:23px;'><b>
-        (b) Supuesto de homocedasticidad:</b> Verificar si los residuos muestran una varianza constante a lo largo de
-        los valores predichos, es decir, si no forman patrones visibles como conos o parábolas. 
-        </p>''', 
-        unsafe_allow_html=True)
+            (a) Supuesto de media cero:</b> Graficar los residuos ei contra los valores predichos yi y comprobar si los residuos
+            están distribuidos aleatoriamente alrededor de la línea de cero. 
+            </p>''', 
+            unsafe_allow_html=True)
 
 st.code('''
 y_train_pred_sm = model_sm.predict(X_train_sm)
-        
+mean_residuals = np.mean(residuals_sm)
+
 fig = go.Figure()
 
 # Agregar la gráfica de dispersión
@@ -252,9 +167,10 @@ fig.update_layout(
 fig.show()
 ''')
 
+mean_residuals = np.mean(residuals_sm)
+
 fig = go.Figure()
 
-# Agregar la gráfica de dispersión
 fig.add_trace(go.Scatter(
     x=y_train_pred_sm,
     y=residuals_sm,
@@ -264,7 +180,6 @@ fig.add_trace(go.Scatter(
     hovertemplate="<b>Valor:</b> %{x}<br><b>Residuo:</b> %{y}<extra></extra>"
 ))
 
-# Agregar la línea horizontal para la media de los residuos
 fig.add_trace(go.Scatter(
     x=[min(y_train_pred_sm), max(y_train_pred_sm)],
     y=[mean_residuals, mean_residuals],
@@ -273,7 +188,6 @@ fig.add_trace(go.Scatter(
     name="Media residuos"
 ))
 
-# Actualizar el diseño del gráfico y colocar la leyenda en la parte inferior
 fig.update_layout(
     title="Residuals vs. Predicted values",
     xaxis_title="Predicted values",
@@ -285,13 +199,54 @@ fig.update_layout(
         xanchor="center",
         x=0.5
     ),
-    height = 600
+    height = 500
 )
 
-_, col1, _ = st.columns([0.1, 0.2, 0.1])
+col1, col2 = st.columns([0.6,0.4])
 
 with col1:
     st.plotly_chart(fig)
+
+with col2:
+    st.write('''<br><p style='font-size:20px;'><b>
+            1. ¿Cómo se refleja el cumplimiento del supuesto de media cero en la distribución de los residuos y qué implicaciones
+            tiene para la precisión del modelo? Justifica tu respuesta detalladamente con base en los resultados obtenidos.
+            </b></p>''',unsafe_allow_html=True)
+             
+    st.write('''<p style='font-size:20px;'>
+            \tEsto se refleja cuando los puntos de Residuo vs valores predichos estan distribuidos equitativamente y no siguen patrones 
+            alrededor de 0 en el eje y de los residulos, el cumplimiento de este es importante por que cuando no se cumple el modelo esta 
+            sesgado y por los tanto no hace predicciones precisas
+            </p>''',unsafe_allow_html=True)
+
+st.write("")
+
+st.write('''<p style='font-size:23px;'><b>
+            (b) Supuesto de homocedasticidad:</b> Verificar si los residuos muestran una varianza constante a lo largo de
+            los valores predichos, es decir, si no forman patrones visibles como conos o parábolas. 
+            </p>''', 
+            unsafe_allow_html=True)
+
+col1, col2 = st.columns([0.6,0.4])
+
+with col1:
+    st.plotly_chart(fig)
+
+with col2:
+
+    st.write('''<br><p style='font-size:20px;'><b>
+            2. ¿Qué evidencia gráfica puedes observar para confirmar si se cumple el supuesto de homocedasticidad en los residuos
+            y qué consecuencias tendría la falta de varianza constante? Justifica con base en los patrones observados en las visualizaciones.
+            </b></p>''',unsafe_allow_html=True)
+             
+    st.write('''<p style='font-size:20px;'>
+            \tLa grafica de puntos de Residuo vs valores predichos  permite ver si se cumple el supuesto de homocedasticidad, Si los residuos
+            forman un patron como un cono o una parabola (es decir, si la dispersionaumenta o disminuye a medida que cambian los valores predichos), 
+            esto indica heterocedasticidad, lo que sugiere que la varianza de los errores no es constante y por lo tanto asi esto significa que el 
+            modelo estara sesgado
+            </p>''',unsafe_allow_html=True)
+
+st.write("")
 
 st.write('''<p style='font-size:23px;'><b>
         (c) Supuesto de independencia:</b> Graficar los residuos en función del orden de las 
@@ -336,13 +291,6 @@ fig.update_layout(
 fig.show()
 ''')
 
-import plotly.graph_objects as go
-import numpy as np
-
-# Supón que residuals_sm es tu array de residuos
-# residuals_sm = ...
-
-# Calcular la media de los residuos
 mean_residuals = np.mean(residuals_sm)
 
 # Crear el gráfico con Plotly
@@ -382,9 +330,26 @@ fig.update_layout(
     height = 500
 )
 
-# Mostrar el gráfico en Streamlit
-st.plotly_chart(fig)
+col1, col2 = st.columns([0.6,0.4])
 
+with col1:
+    st.plotly_chart(fig)
+
+with col2:
+
+    st.write('''<br><p style='font-size:20px;'><b>
+            3. ¿Existe algún patrón de dependencia en los residuos cuando se grafican según el orden de las observaciones y
+            qué impacto tiene en la validez del modelo? Justifica si el modelo puede estar fallando en capturar relaciones
+            importantes en los datos.
+            </b></p>''',unsafe_allow_html=True)
+             
+    st.write('''<p style='font-size:20px;'>
+            \tEn el caso de que la grafica de los residuos segun el orden de observaciones haya una dependencia significaria
+            que el modelo no esta prediciendo bien por que le esta dando mas prioridad a algunos datos que a otros, lo que 
+            indica un sesgo en el modelo, pero en este caso el modelo no pareciera tener una dependencia con las predicciones anteriores
+            </p>''',unsafe_allow_html=True)
+
+st.write("")
 
 st.write('''<p style='font-size:23px;'><b>
         (D) Supuesto de normalidad:</b> Realizar un gráfico Q-Q (quantile-quantile) para comparar 
@@ -428,51 +393,81 @@ fig.update_layout(
 )
 ''')
 
-fig = go.Figure()
-
-# Q-Q plot teórico y observado usando scipy.stats.probplot
-probplot = stats.probplot(residuals_sm, dist="norm", plot=None)
-
-# Agregar los puntos del Q-Q plot
-fig.add_trace(go.Scatter(
-    x=probplot[0][0],  # Cuantiles teóricos
-    y=probplot[0][1],  # Cuantiles observados
-    mode='markers',
-    marker=dict(color="lightblue", size=7),
-    name="Cuantiles"
-))
-
-# Agregar la línea de referencia para una distribución normal
-fig.add_trace(go.Scatter(
-    x=[min(probplot[0][0]), max(probplot[0][0])],
-    y=[min(probplot[0][0]), max(probplot[0][0])],
-    mode='lines',
-    line=dict(color='red', dash='dash'),
-    name="Línea de referencia"
-))
-
-# Actualizar el diseño y colocar la leyenda en la parte inferior
-fig.update_layout(
-    title="Q-Q plot of residuals",
-    xaxis_title="Cuantiles Teóricos",
-    yaxis_title="Cuantiles Observados",
-    legend=dict(
-        orientation="h",  # Leyenda en orientación horizontal
-        yanchor="top",    # Ancla la parte superior de la leyenda
-        y=-0.2,           # Coloca la leyenda ligeramente debajo del gráfico
-        xanchor="center", # Centra la leyenda
-        x=0.5
-    ),
-    height = 600
-)
-
 col1, col2 = st.columns([0.6,0.4])
 
 with col1:
-    st.plotly_chart(fig)
+
+    theoretical_quantiles = np.linspace(0.001, 0.999, len(residuals_sm))
+    theoretical_values = stats.norm.ppf(theoretical_quantiles)
+    residuals_sorted = np.sort(residuals_sm)
+
+    slope, intercept = np.polyfit(theoretical_values, residuals_sorted, 1)
+
+    fig = go.Figure()
+
+    fig.add_trace(go.Scatter(
+        x=theoretical_values,
+        y=residuals_sorted,
+        mode='markers',
+        name='Residuos vs Cuartiles teóricos',
+        marker=dict(color='lightblue',size = 8)
+    ))
+
+    fig.add_trace(go.Scatter(
+        x=theoretical_values,
+        y=slope * theoretical_values + intercept,
+        mode='lines',
+        name='Línea de referencia',
+        line=dict(color='red', dash='dash')
+    ))
+
+    fig.update_layout(
+        title="Gráfico de probabilidad (Q-Q plot)",
+        xaxis_title="Cuartiles teóricos",
+        yaxis_title="Residuos",
+        height = 700,
+        legend=dict(
+            orientation="h",
+            yanchor="top",
+            y=-0.2,
+            xanchor="center",
+            x=0.5
+        )
+    )
+
+    st.plotly_chart(fig, use_container_width=True)
 
 with col2:
-    st.write("Tabla para poner distitnas pruebas de normalidad")
+
+    st.write('''<br><p style='font-size:20px;'><b>
+            4. ¿Siguen los residuos una distribución normal según el gráfico Q-Q y cómo afecta esto a la validez de las pruebas de
+            hipótesis y los intervalos de confianza del modelo? Justifica tu respuesta con base en la alineación de los residuos
+            en el gráfico.
+            </b></p>''',unsafe_allow_html=True)    
+
+    shapiro_p = stats.shapiro(residuals_sm)[1]
+    ks_p = stats.kstest(residuals_sm, 'norm')[1]
+    dagostino_p = stats.normaltest(residuals_sm)[1]
+
+    test_results = {
+        'Prueba de normalidad': ['Shapiro-Wilk', 'Kolmogorov-Smirnov', "D'Agostino-Pearson", ],
+        'p-valor': [shapiro_p, ks_p, dagostino_p, ]
+    }
+
+    df = pd.DataFrame(test_results)
+
+    def color_pvalue(val):
+        color = '#B0ED8B' if val > 0.05 else '#ED8181'
+        return f'background-color: {color}'
+
+    st.table(df.style.applymap(color_pvalue, subset=['p-valor']))
+             
+    st.write('''<p style='font-size:20px;'>
+            \tLa grafica de Q-Q no sugiere que los residuos siguen una distribución normal por que los puntos no se alinean
+            alrededor de la línea diagonal roja que representa la distribucion teorica normal y ademas las pruebas de normalidad tambien
+            indican que los residuos no se distribuyen normales es decir que las pruebas de hipótesis y la construcción de intervalos de 
+            confianza en el modelo no son validos. por lo que los resultados inferenciales del modelo son poco confiables
+            </p>''',unsafe_allow_html=True)
 
 st.write('''<p style='font-size:23px;'><b>
         (e) Supuesto de ausencia de multicolinealidad:</b> Calcular el factor de inflación de la varianza (VIF) para
@@ -588,51 +583,44 @@ with col1:
             tickmode='array',
             tickvals=list(range(len(filtered_corr.columns))),
             ticktext=filtered_corr.columns,
-            title='Variables'
+            
         ),
         yaxis=dict(
             tickmode='array',
             tickvals=list(range(len(filtered_corr.columns))),
             ticktext=filtered_corr.columns,
-            title='Variables',
             autorange='reversed'  # Para que el eje Y tenga el mismo orden que el eje X
         )
     )
 
     st.plotly_chart(fig5)
 
+st.write('''<p style='font-size:23px;'><b>
+        5. ¿Qué indican los valores de VIF sobre la multicolinealidad entre las variables predictoras y cómo afecta esto
+        la estabilidad y fiabilidad de los coeficientes? Justifica si es necesario aplicar alguna técnica para reducir la
+        multicolinealidad. (la respuesta completa no esta en el documento) 
+        </p>''', 
+        unsafe_allow_html=True)
 
+st.write('''<p style='font-size:20px;'>
+        Los valores de VIF indican una alta multicolinealidad en casi todas las variables como nox, rm, tax, ptratio, con
+        VIF > 10, algunos superiores a 70, esto si afecta la estabilidad y confiabilidad de los coeficientes por que la multicolinealidad 
+        aumenta la varianza de los coeficientes, es decir que crea una incertidumbre en la estimacion de los coeficientes y por lo tanto 
+        estas se vuelven menos confiables e inestables.<br>
+        Algunas tecnicas para reducir la multicolinealidad eliminando las variables redundantes son, Análisis sde Componentes
+        Principales (PCA) o regresión regularizada (Ridge/Lasso)
+        </p>''',unsafe_allow_html=True)
 
 '''
-1. ¿Cómo se refleja el cumplimiento del supuesto de media cero en la distribución de los residuos y qué implicaciones
-tiene para la precisión del modelo? Justifica tu respuesta detalladamente con base en los resultados obtenidos.
-
-
-2. ¿Qué evidencia gráfica puedes observar para confirmar si se cumple el supuesto de homocedasticidad en los residuos
-y qué consecuencias tendría la falta de varianza constante? Justifica con base en los patrones observados en las
-visualizaciones.
-
-
-3. ¿Existe algún patrón de dependencia en los residuos cuando se grafican según el orden de las observaciones y
-qué impacto tiene en la validez del modelo? Justifica si el modelo puede estar fallando en capturar relaciones
-importantes en los datos.
-
-
-4. ¿Siguen los residuos una distribución normal según el gráfico Q-Q y cómo afecta esto a la validez de las pruebas de
-hipótesis y los intervalos de confianza del modelo? Justifica tu respuesta con base en la alineación de los residuos
-en el gráfico.
-
-
-5. ¿Qué indican los valores de VIF sobre la multicolinealidad entre las variables predictoras y cómo afecta esto
-la estabilidad y fiabilidad de los coeficientes? Justifica si es necesario aplicar alguna técnica para reducir la
-multicolinealidad.
-
-
 6. Si se detecta falta de independencia en los residuos, ¿qué ajustes o modificaciones podrían realizarse en el modelo
 para corregir este problema? Justifica qué modificaciones serían adecuadas y por qué.
 
+para series temporales, los modelos ARIMA o autorregresivos son adecuados para corregir la falta de independencia.
+En datos tabulares, se pueden incluir variables predictoras omitidas, términos de interacción o efectos aleatorios, o incluso considerar modelos que permitan errores correlacionados
 
 7. En caso de encontrar heterocedasticidad en los residuos, ¿qué estrategias podrías implementar para mejorar el
 ajuste del modelo y garantizar una varianza constante? Justifica cada estrategia que propongas con base en el
 análisis de los resultados.
+
+
 '''
