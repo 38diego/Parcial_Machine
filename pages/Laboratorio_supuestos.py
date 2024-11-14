@@ -230,7 +230,7 @@ st.write('''<p style='font-size:23px;'><b>
 col1, col2 = st.columns([0.6,0.4])
 
 with col1:
-    st.plotly_chart(fig)
+    st.plotly_chart(fig,key="s")
 
 with col2:
 
