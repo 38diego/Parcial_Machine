@@ -976,10 +976,35 @@ elif problema == "Clasificacion":
 
         knn = KNeighborsClassifier()
 
-        param_grid = {'n_neighbors': range(1, 21), 'weights': ['uniform', 'distance'], 'p': [1, 2]}  #Manhattan,  Euclidiana
-        kf = KFold(n_splits=5, shuffle=True, random_state=42)
-        grid_search = GridSearchCV(estimator=knn, param_grid=param_grid, cv=kf, scoring='accuracy')
-        grid_search.fit(X_scaled, y_train)
+        if balance == "Original":
+            param_grid = {'n_neighbors': [11], 'weights': ['uniform', 'distance'], 'p': [1]}  #Manhattan,  Euclidiana
+            kf = KFold(n_splits=5, shuffle=True, random_state=42)
+            grid_search = GridSearchCV(estimator=knn, param_grid=param_grid, cv=kf, scoring='accuracy')
+            grid_search.fit(X_scaled, y_train)
+
+        elif balance == "ADASYN":
+            param_grid = {'n_neighbors': [2], 'weights': ['uniform', 'distance'], 'p': [1]}  #Manhattan,  Euclidiana
+            kf = KFold(n_splits=5, shuffle=True, random_state=42)
+            grid_search = GridSearchCV(estimator=knn, param_grid=param_grid, cv=kf, scoring='accuracy')
+            grid_search.fit(X_scaled, y_train)
+
+        elif balance == "BORDERLINE_SMOTE":
+            param_grid = {'n_neighbors': [2], 'weights': ['uniform', 'distance'], 'p': [1]}  #Manhattan,  Euclidiana
+            kf = KFold(n_splits=5, shuffle=True, random_state=42)
+            grid_search = GridSearchCV(estimator=knn, param_grid=param_grid, cv=kf, scoring='accuracy')
+            grid_search.fit(X_scaled, y_train)
+
+        elif balance == "RANDOM OVER SAMPLING":
+            param_grid = {'n_neighbors': [1], 'weights': ['uniform', 'distance'], 'p': [1]}  #Manhattan,  Euclidiana
+            kf = KFold(n_splits=5, shuffle=True, random_state=42)
+            grid_search = GridSearchCV(estimator=knn, param_grid=param_grid, cv=kf, scoring='accuracy')
+            grid_search.fit(X_scaled, y_train)
+
+        elif balance == "RANDOM UNDER SAMPLING":
+            param_grid = {'n_neighbors': [11], 'weights': ['uniform', 'distance'], 'p': [1]}  #Manhattan,  Euclidiana
+            kf = KFold(n_splits=5, shuffle=True, random_state=42)
+            grid_search = GridSearchCV(estimator=knn, param_grid=param_grid, cv=kf, scoring='accuracy')
+            grid_search.fit(X_scaled, y_train)
 
         best_knn = grid_search.best_estimator_
         st.write("Mejores parámetros:", grid_search.best_params_)
@@ -1092,10 +1117,35 @@ elif problema == "Clasificacion":
     elif modelo == "Comparacion":  
         knn = KNeighborsClassifier()
 
-        param_grid = {'n_neighbors': range(1, 21), 'weights': ['uniform', 'distance'], 'p': [1, 2]}  #Manhattan,  Euclidiana
-        kf = KFold(n_splits=5, shuffle=True, random_state=42)
-        grid_search = GridSearchCV(estimator=knn, param_grid=param_grid, cv=kf, scoring='accuracy')
-        grid_search.fit(X_scaled, y_train)
+        if balance == "Original":
+            param_grid = {'n_neighbors': [11], 'weights': ['uniform', 'distance'], 'p': [1]}  #Manhattan,  Euclidiana
+            kf = KFold(n_splits=5, shuffle=True, random_state=42)
+            grid_search = GridSearchCV(estimator=knn, param_grid=param_grid, cv=kf, scoring='accuracy')
+            grid_search.fit(X_scaled, y_train)
+
+        elif balance == "ADASYN":
+            param_grid = {'n_neighbors': [2], 'weights': ['uniform', 'distance'], 'p': [1]}  #Manhattan,  Euclidiana
+            kf = KFold(n_splits=5, shuffle=True, random_state=42)
+            grid_search = GridSearchCV(estimator=knn, param_grid=param_grid, cv=kf, scoring='accuracy')
+            grid_search.fit(X_scaled, y_train)
+
+        elif balance == "BORDERLINE_SMOTE":
+            param_grid = {'n_neighbors': [2], 'weights': ['uniform', 'distance'], 'p': [1]}  #Manhattan,  Euclidiana
+            kf = KFold(n_splits=5, shuffle=True, random_state=42)
+            grid_search = GridSearchCV(estimator=knn, param_grid=param_grid, cv=kf, scoring='accuracy')
+            grid_search.fit(X_scaled, y_train)
+
+        elif balance == "RANDOM OVER SAMPLING":
+            param_grid = {'n_neighbors': [1], 'weights': ['uniform', 'distance'], 'p': [1]}  #Manhattan,  Euclidiana
+            kf = KFold(n_splits=5, shuffle=True, random_state=42)
+            grid_search = GridSearchCV(estimator=knn, param_grid=param_grid, cv=kf, scoring='accuracy')
+            grid_search.fit(X_scaled, y_train)
+
+        elif balance == "RANDOM UNDER SAMPLING":
+            param_grid = {'n_neighbors': [11], 'weights': ['uniform', 'distance'], 'p': [1]}  #Manhattan,  Euclidiana
+            kf = KFold(n_splits=5, shuffle=True, random_state=42)
+            grid_search = GridSearchCV(estimator=knn, param_grid=param_grid, cv=kf, scoring='accuracy')
+            grid_search.fit(X_scaled, y_train)
 
         best_knn = grid_search.best_estimator_
 
