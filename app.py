@@ -28,7 +28,6 @@ caso_estudio = st.Page(
     url_path='caso_estudio', 
 )
 
-
 streamlit_page = st.navigation([Regresion_lineal,Laboratorio,Multicolinealidad,caso_estudio])
 
 streamlit_page.run()

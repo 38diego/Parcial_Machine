@@ -245,7 +245,7 @@ if problema == "Regresion":
         ('poly_features', PolynomialFeatures(degree=2, include_bias=False)),
         ('linear_regression', LinearRegression())
     ])
-    param_grid = {'poly_features__degree': [2, 3, 4, 5]}
+    param_grid = {'poly_features__degree': [2, 3, 4]}
     kfolds = KFold(n_splits=5, shuffle=True, random_state=42)
     grid_search = GridSearchCV(pipeline, param_grid, cv=kfolds, scoring='neg_mean_squared_error')
     grid_search.fit(X_train, y_train)
