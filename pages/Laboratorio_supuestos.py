@@ -595,7 +595,7 @@ with col1:
 
     st.plotly_chart(fig5)
 
-st.write('''<p style='font-size:23px;'><b>
+st.write('''<p style='font-size:23px;'>
         5. ¿Qué indican los valores de VIF sobre la multicolinealidad entre las variables predictoras y cómo afecta esto
         la estabilidad y fiabilidad de los coeficientes? Justifica si es necesario aplicar alguna técnica para reducir la
         multicolinealidad. (la respuesta completa no esta en el documento) 
@@ -611,16 +611,32 @@ st.write('''<p style='font-size:20px;'>
         Principales (PCA) o regresión regularizada (Ridge/Lasso)
         </p>''',unsafe_allow_html=True)
 
-'''
-6. Si se detecta falta de independencia en los residuos, ¿qué ajustes o modificaciones podrían realizarse en el modelo
-para corregir este problema? Justifica qué modificaciones serían adecuadas y por qué.
+st.write('''<p style='font-size:23px;'>
+        6. Si se detecta falta de independencia en los residuos, ¿qué ajustes o modificaciones podrían realizarse en el modelo para corregir este problema? 
+        Justifica qué modificaciones serían adecuadas y por qué.
+        </p>''', 
+        unsafe_allow_html=True)
 
-para series temporales, los modelos ARIMA o autorregresivos son adecuados para corregir la falta de independencia.
-En datos tabulares, se pueden incluir variables predictoras omitidas, términos de interacción o efectos aleatorios, o incluso considerar modelos que permitan errores correlacionados
+st.write('''<p style='font-size:20px;'>
+        para series temporales, los modelos ARIMA o autorregresivos son adecuados para corregir la falta de independencia.
+        En datos tabulares, se pueden incluir variables predictoras omitidas, términos de interacción o efectos aleatorios, o incluso considerar modelos que 
+        permitan errores correlacionados
+        </p>''',unsafe_allow_html=True)
 
-7. En caso de encontrar heterocedasticidad en los residuos, ¿qué estrategias podrías implementar para mejorar el
-ajuste del modelo y garantizar una varianza constante? Justifica cada estrategia que propongas con base en el
-análisis de los resultados.
+st.write('''<p style='font-size:23px;'>
+        7. En caso de encontrar heterocedasticidad en los residuos, ¿qué estrategias podrías implementar para mejorar el
+        ajuste del modelo y garantizar una varianza constante? Justifica cada estrategia que propongas con base en el
+        análisis de los resultados.
+        </p>''', 
+        unsafe_allow_html=True)
 
+st.write('''
+<ul>
+    <li style='font-size:20px;'>Transformación de variables: Aplicar una transformación como logaritmo o raíz a la variable dependiente para reducir la varianza en los valores altos y aproximar su distribución a algo más parecido a una distribución normal.</li>
+    <li style='font-size:20px;'>Regresión ponderada (WLS): Utilizar pesos inversamente proporcionales a la varianza de cada observación para ajustar un modelo que disminuya la influencia de puntos con alta varianza o atípicos para reducir la influencia de estos puntos.</li>
+    <li style='font-size:20px;'>Errores estándar robustos: Ajustar los errores estándar para que sean robustos frente a la heterocedasticidad sin modificar el modelo, permitiendo intervalos de confianza y valores p más confiables.</li>
+    <li style='font-size:20px;'>Regresión polinómica: Introducir términos polinómicos para capturar mejor relaciones no lineales que podrían estar generando heterocedasticidad.</li>
+    <li style='font-size:20px;'>Regresión cuantílica: Ajustar diferentes cuantiles de la variable dependiente, ofreciendo una alternativa robusta a la heterocedasticidad y permitiendo analizar distintos percentiles de la relación.</li>
+</ul>
+''', unsafe_allow_html=True)
 
-'''

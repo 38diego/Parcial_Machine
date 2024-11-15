@@ -22,6 +22,12 @@ Multicolinealidad = st.Page(
     url_path='Multicolinealidad',
 )
 
-streamlit_page = st.navigation([Regresion_lineal,Laboratorio,Multicolinealidad])
+caso_estudio = st.Page(
+    'pages/caso_estudio.py',
+    title='Caso de estudio',
+    url_path='Caso de estudio',
+)
+
+streamlit_page = st.navigation([Regresion_lineal,Laboratorio,Multicolinealidad,caso_estudio])
 
 streamlit_page.run()
