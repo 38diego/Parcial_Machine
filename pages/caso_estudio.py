@@ -50,15 +50,16 @@ if problema == "Regresion":
 
     Wine = Wine.iloc[:, :-1]
 
-    fig = go.Figure()
-    for col in Wine.columns:
-        fig.add_trace(go.Box(y=Wine[col], name=col))
-    fig.update_layout(title="Características antes de la normalización", xaxis_title="Características", yaxis_title="Valores")
-    st.plotly_chart(fig)
+    if procesamiento == "Ninguno":
+        fig = go.Figure()
+        for col in Wine.columns:
+            fig.add_trace(go.Box(y=Wine[col], name=col))
+        fig.update_layout(title="Datos crudos", xaxis_title="Características", yaxis_title="Valores")
+        st.plotly_chart(fig)
 
     if procesamiento == "EDA":
         scaler = StandardScaler()
-        Wine_imputed = Wine.drop(columns=["quality"])
+        Wine_imputed = Wine.drop(columns=["quality","fixed acidity", "density", "pH"])
         Wine_scaled = pd.DataFrame(scaler.fit_transform(Wine_imputed), columns=Wine_imputed.columns)
         Wine_scaled['quality'] = Wine['quality']
         Wine = Wine_scaled
@@ -97,9 +98,42 @@ if problema == "Regresion":
         X = df.drop(columns="quality")
         y = df[['quality']]
 
+    if procesamiento == "Ninguno":
+        st.code('''
+                Wine = pd.read_csv("WineQT.csv")
+                Wine = Wine.iloc[:, :-1]
+                X = Wine.drop(columns="quality")
+                y = Wine[['quality']]
+
+                X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.20, random_state=42)
+
+                ols_model = sm.OLS(y_train, X_train_const)
+                ols_results = ols_model.fit()
+
+                summary = ols_results.summary()
+
+                print(summary)
+                ''')
+    
+    else:
+        st.code('''
+                Wine = pd.read_csv("WineQT.csv")
+                Wine = Wine.iloc[:, :-1]
+                X = Wine.drop(columns="quality","fixed acidity", "density", "pH")
+                y = Wine[['quality']]
+
+                X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.20, random_state=42)
+
+                ols_model = sm.OLS(y_train, X_train_const)
+                ols_results = ols_model.fit()
+
+                summary = ols_results.summary()
+
+                print(summary)
+                ''')
+
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.20, random_state=42)
 
-    # Entrenar modelo lineal
     linear_model = LinearRegression()
     linear_model.fit(X_train, y_train)
     y_pred = linear_model.predict(X_train)
