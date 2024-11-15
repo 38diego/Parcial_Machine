@@ -1,6 +1,6 @@
-r-base
-r-base-dev
-r-cran-ggplot2
-r-cran-cowplot
-r-cran-ggplot2
-r-cran-glmnet
+#r-base
+#r-base-dev
+#r-cran-ggplot2
+#r-cran-cowplot
+#r-cran-ggplot2
+#r-cran-glmnet

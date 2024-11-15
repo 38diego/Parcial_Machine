@@ -423,6 +423,12 @@ elif problema == "Clasificacion":
     grid_search = GridSearchCV(estimator=knn, param_grid=param_grid, cv=kf, scoring='accuracy')
     grid_search.fit(X_train, y_train)
 
+    best_knn = grid_search.best_estimator_
+    st.write("Mejores parámetros:", grid_search.best_params_)
+
+    y_pred_knn = best_knn.predict(X_test)
+    y_pred_proba_knn = best_knn.predict_proba(X_test)[:, 1]
+
     X_scaled = sm.add_constant(X_scaled)
 
     # Crear el modelo en statsmodels
