@@ -51,9 +51,11 @@ if problema == "Regresion":
     Wine = Wine.iloc[:, :-1]
 
     if procesamiento == "Ninguno":
-        st.write('''En esta parte se realiza la regresion lineal y polinomica sin tener en cuenta ningun procesamiento
-                    mas alla de quitar los outliers para evaluar como es el rendimiento del modelo con los datos crudos y sin
-                    meterle mucha ciencia al procedimiento, en la seccion de EDA, se detallara un procesamiento mas amplio''')
+        st.write('''<p style='font-size:23px;'>
+                En esta parte se realiza la regresion lineal y polinomica sin tener en cuenta ningun procesamiento
+                mas alla de quitar los outliers para evaluar como es el rendimiento del modelo con los datos crudos y sin
+                meterle mucha ciencia al procedimiento, en la seccion de EDA, se detallara un procesamiento mas amplio
+                </p>''',unsafe_allow_html=True)
 
         fig = go.Figure()
         for col in Wine.columns:
@@ -62,12 +64,14 @@ if problema == "Regresion":
         st.plotly_chart(fig)
 
     if procesamiento == "EDA":
-        st.write('''En esta parte se realiza la regresion lineal y polinomica teniendo en cuenta un procesamiento el cual incluye un 
-                    entendimiento de las variables para quitar posibles redundancias, quitar los outliers y normalizar las variables para evaluar 
-                    la mejoria en el rendimiento del modelo con los datos procesados y entendidos:''')
+        st.write('''<p style='font-size:23px;'>
+                En esta parte se realiza la regresion lineal y polinomica teniendo en cuenta un procesamiento el cual incluye un 
+                entendimiento de las variables para quitar posibles redundancias, quitar los outliers y normalizar las variables para evaluar 
+                la mejoria en el rendimiento del modelo con los datos procesados y entendidos:
+                </p>''',unsafe_allow_html=True)
         
         st.write("""
-        El conjunto de datos contiene las siguientes características:
+        <p style='font-size:23px;'>El conjunto de datos contiene las siguientes características:
 
         - **fixed acidity**: Acidez fija del vino.
         - **volatile acidity**: Acidez volátil del vino.
@@ -81,25 +85,22 @@ if problema == "Regresion":
         - **sulphates**: Concentración de sulfatos.
         - **alcohol**: Contenido alcohólico del vino.
         - **quality**: Clasificación de la calidad del vino (escala del 0 al 10).
-        """)
+        </p>""",unsafe_allow_html=True)
 
         st.write('''
-        *FORMA INTUITVA*
+        <p style='font-size:23px;'><b>FORMA INTUITVA</b><br>
         La densidad de un vino está muy influenciada por componentes como el contenido de alcohol y el azúcar residual. Estos factores afectan directamente la masa y, por ende, la densidad del líquido. Como estos atributos ya están representados, density se vuelve redundante.
         <br><br>El pH, que mide la acidez, es otro aspecto que resulta de la combinación de distintas sustancias ácidas en el vino, como el ácido cítrico (citric acid) y la acidez volátil (volatile acidity). Como estos componentes específicos están directamente cuantificados en otras variables, el pH puede ser considerado como una medida general que añade poca información adicional.
         <br><br>La acidez fija (fixed acidity) también se ve reflejada en variables como citric acid y volatile acidity. Estas variables representan distintos tipos de ácidos específicos, por lo que contar con una medida general de acidez fija es redundante, ya que puede descomponerse en estos elementos individuales.
-        ''',unsafe_allow_html=True)
+        </p>''',unsafe_allow_html=True)
 
         st.write('''
-        *MULTICOLINEALIDAD*
+        <p style='font-size:23px;'><b>MULTICOLINEALIDAD</b><br>
         Las variables density, pH y fixed acidity mostraron los valores de VIF más elevados en el modelo de regresion que se hizo 
         anteriormente, lo que sugiere que están siendo explicadas por otras variables presentes en el conjunto de datos que como
         anteriormente desde un punto de vista intuitivo, era el caso 
-        ''',unsafe_allow_html=True)
+        </p>''',unsafe_allow_html=True)
 
-
-
-        
         scaler = StandardScaler()
         Wine_imputed = Wine.drop(columns=["quality","fixed acidity", "density", "pH"])
         Wine_scaled = pd.DataFrame(scaler.fit_transform(Wine_imputed), columns=Wine_imputed.columns)
@@ -140,39 +141,7 @@ if problema == "Regresion":
         X = df.drop(columns="quality")
         y = df[['quality']]
 
-    if procesamiento == "Ninguno":
-        st.code('''
-                Wine = pd.read_csv("WineQT.csv")
-                Wine = Wine.iloc[:, :-1]
-                X = Wine.drop(columns="quality")
-                y = Wine[['quality']]
-
-                X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.20, random_state=42)
-
-                ols_model = sm.OLS(y_train, X_train_const)
-                ols_results = ols_model.fit()
-
-                summary = ols_results.summary()
-
-                print(summary)
-                ''')
-    
-    else:
-        st.code('''
-                Wine = pd.read_csv("WineQT.csv")
-                Wine = Wine.iloc[:, :-1]
-                X = Wine.drop(columns="quality","fixed acidity", "density", "pH")
-                y = Wine[['quality']]
-
-                X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.20, random_state=42)
-
-                ols_model = sm.OLS(y_train, X_train_const)
-                ols_results = ols_model.fit()
-
-                summary = ols_results.summary()
-
-                print(summary)
-                ''')
+    st.write("## **Coeficientes estimados**")
 
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.20, random_state=42)
 
@@ -211,34 +180,119 @@ if problema == "Regresion":
 
     _,col1,_ = st.columns([0.2,1,0.2])
 
-    st.table(styled_coef_table)
+    with col1:
+        st.table(styled_coef_table)
+        st.write(f'''
+            <p style='font-size:20px;'> Estos fueron los coeficientes estimados por el modelo con su respeciva significancia que
+                 nos indica que tan confiables fueron estas estimaciones 
+            </p>''',unsafe_allow_html=True)
 
-    # Gráfico de residuos vs valores predichos
-    fig = go.Figure()
-    fig.add_trace(go.Scatter(x=y_pred.flatten(), y=residuos.values.flatten(), mode="markers", name="Residuos"))
-    fig.add_trace(go.Scatter(x=y_pred.flatten(), y=np.repeat(np.mean(residuos), len(y_pred)), mode="lines", name="Media de Residuos", line=dict(color="red", dash="dash")))
-    fig.update_layout(title="Residuos vs Valores Predichos", xaxis_title="Valores Predichos", yaxis_title="Residuos")
-    st.plotly_chart(fig)
+    st.write(f'''
+    ## **Supuestos de media de los residuos y homoseasticidad:**
+    ''',unsafe_allow_html=True)
 
-    # Pruebas de homocedasticidad y normalidad
-    exog = sm.add_constant(X_train)
-    bp_test = het_breuschpagan(residuos, exog)
-    labels = ['LM Statistic', 'LM-Test p-value', 'F-Statistic', 'F-Test p-value']
-    bp_results = dict(zip(labels, bp_test))
-    for key, value in bp_results.items():
-        st.write(f"{key}: {value}")
+    col1, col2 = st.columns([0.7,0.3])
 
-    # Gráfico de residuos vs observaciones
-    observaciones = np.arange(len(residuos))
-    fig = go.Figure()
-    fig.add_trace(go.Scatter(x=observaciones, y=residuos.values.flatten(), mode="lines+markers", name="Residuos"))
-    fig.add_trace(go.Scatter(x=observaciones, y=np.zeros(len(observaciones)), mode="lines", name="Referencia", line=dict(color="red", dash="dash")))
-    fig.update_layout(title="Residuos vs Observaciones", xaxis_title="Observaciones", yaxis_title="Residuos")
-    st.plotly_chart(fig)
+    with col1:
+        fig = go.Figure()
+        fig.add_trace(go.Scatter(x=y_pred.flatten(), y=residuos.values.flatten(), mode="markers", name="Residuos",marker=dict(color="lightblue", size=7)))
+        fig.add_trace(go.Scatter(x=y_pred.flatten(), y=np.repeat(np.mean(residuos), len(y_pred)), mode="lines", name="Media de Residuos", line=dict(color="red", dash="dash")))
+        fig.update_layout(title="Residuos vs Valores Predichos", xaxis_title="Valores Predichos", yaxis_title="Residuos",
+                          legend=dict(
+                                        orientation="h",
+                                        yanchor="top",
+                                        y=-0.2,
+                                        xanchor="center",
+                                        x=0.5
+                                    ),
+                            height = 600)
+        st.plotly_chart(fig)
 
-    # Estadístico de Durbin-Watson
-    dw_stat = durbin_watson(residuos)
-    st.write("Estadístico de Durbin-Watson:", dw_stat)
+    with col2:
+            
+        exog = sm.add_constant(X_train)
+        bp_test = het_breuschpagan(residuos, exog)
+        labels = ['LM Statistic', 'LM-Test p-value', 'F-Statistic', 'F-Test p-value']
+        bp_results = dict(zip(labels, bp_test))
+        
+        bp_results_df = pd.DataFrame(list(bp_results.items()), columns=["Prueba", "Valor"])
+
+                # Extraer solo el estadístico LM y su p-valor
+        bp_statistic = bp_results['LM Statistic']
+        bp_p_value = bp_results['LM-Test p-value']
+
+        # Crear un DataFrame solo con el estadístico LM y su p-valor
+        bp_table_df = pd.DataFrame({
+            "Estadístico": ["LM Statistic"],
+            "Valor": [bp_statistic],
+            "P-valor": [bp_p_value]
+        })
+
+        # Aplicar el color según el p-valor
+        styled_bp_table = bp_table_df.style.applymap(
+            lambda val: 'background-color: #B0ED8B' if isinstance(val, (int, float)) and val < 0.05 else 
+                        'background-color: #ED8181' if isinstance(val, (int, float)) else '',
+            subset=["P-valor"]
+        )
+
+        st.table(styled_bp_table)
+
+        st.write(f'''
+        <p style='font-size:20px;'>media de los residuos: la media de los residuos es {np.mean(residuos)} por lo que este supuesto se cumple
+        homoseasticidad: Para evaluar este supuesto se realiza la grafica de los residuos vs los valores predichos donde por la naturaleza
+        de la variable objetivo se ven lineas extrañas pero de lo que se puede interpretar es que no tienen una varianza constante, ademas
+        se evalua mediante la prueba breushpagan donde Un p-valor por debajo de 0.05 indica presencia de heterocedasticidad, que es este modelo
+        es el caso 
+        </p>''',unsafe_allow_html=True)
+
+
+    st.write(f'''
+    ## **Supuestos de Independencia de los residuos:**
+    ''',unsafe_allow_html=True)
+    
+    col1, col2 = st.columns([0.7,0.3])
+
+    with col1:
+
+        observaciones = np.arange(len(residuos))
+        fig = go.Figure()
+        fig.add_trace(go.Scatter(x=observaciones, y=residuos.values.flatten(), mode="lines+markers", name="Residuos",marker=dict(color="lightblue")))
+        fig.add_trace(go.Scatter(x=observaciones, y=np.zeros(len(observaciones)), mode="lines", name="Referencia", line=dict(color="red", dash="dash")))
+        fig.update_layout(title="Residuos vs Observaciones", xaxis_title="Observaciones", yaxis_title="Residuos")
+        st.plotly_chart(fig)
+
+    with col2:
+        
+        # Estadístico de Durbin-Watson
+        dw_stat = durbin_watson(residuos)
+
+        # Crear el DataFrame con el resultado
+        dw_table_df = pd.DataFrame({
+            "Estadístico": ["Durbin-Watson"],
+            "Valor": [dw_stat[0]],
+        })
+
+        # Aplicar el color según el valor de Durbin-Watson
+        def colorize_dw(val):
+            if isinstance(val, (int, float)):
+                if abs(val - 2) < 0.5:  # Consideramos independencia si DW está cerca de 2
+                    return 'background-color: #B0ED8B'  # Verde (independientes)
+                else:
+                    return 'background-color: #ED8181'  # Rojo (dependientes)
+            return ''
+
+        # Aplicar el estilo
+        styled_dw_table = dw_table_df.style.applymap(colorize_dw, subset=["Valor"])
+
+        # Mostrar la tabla estilizada en Streamlit
+        _, col1, _ = st.columns([0.2, 1, 0.2])
+        st.table(styled_dw_table)
+
+        st.write(f'''
+        <p style='font-size:20px;'> Para evaluar la autocorrelacion de los residuos se hace la grafica ordenada de las predicciones vs
+        los residuos y ademas se usa la prueba durbing watson para evaluarlos estadisticamente, dando como resultado tanto visual como 
+        estadisticamente que no existe una autocorrelacion en los residuos
+        </p>''',unsafe_allow_html=True)
 
     # Q-Q plot
     theoretical_quantiles = np.linspace(0.001, 0.999, len(residuos.values.flatten()))
@@ -247,76 +301,115 @@ if problema == "Regresion":
 
     slope, intercept = np.polyfit(theoretical_values, residuals_sorted, 1)
 
-    fig = go.Figure()
+    st.write("## **Supuesto de normalidad en los residuos**")
 
-    fig.add_trace(go.Scatter(
-        x=theoretical_values,
-        y=residuals_sorted,
-        mode='markers',
-        name='Residuos vs Cuartiles teóricos',
-        marker=dict(color='lightblue',size = 8)
-    ))
 
-    fig.add_trace(go.Scatter(
-        x=theoretical_values,
-        y=slope * theoretical_values + intercept,
-        mode='lines',
-        name='Línea de referencia',
-        line=dict(color='red', dash='dash')
-    ))
+    col1, col2 = st.columns([0.7,0.3])
 
-    fig.update_layout(
-        title="Gráfico de probabilidad (Q-Q plot)",
-        xaxis_title="Cuartiles teóricos",
-        yaxis_title="Residuos",
-        height = 700,
-        legend=dict(
-            orientation="h",
-            yanchor="top",
-            y=-0.2,
-            xanchor="center",
-            x=0.5
+    with col1:
+        fig = go.Figure()
+
+        fig.add_trace(go.Scatter(
+            x=theoretical_values,
+            y=residuals_sorted,
+            mode='markers',
+            name='Residuos vs Cuartiles teóricos',
+            marker=dict(color='lightblue',size = 8)
+        ))
+
+        fig.add_trace(go.Scatter(
+            x=theoretical_values,
+            y=slope * theoretical_values + intercept,
+            mode='lines',
+            name='Línea de referencia',
+            line=dict(color='red', dash='dash')
+        ))
+
+        fig.update_layout(
+            title="Gráfico de probabilidad (Q-Q plot)",
+            xaxis_title="Cuartiles teóricos",
+            yaxis_title="Residuos",
+            height = 700,
+            legend=dict(
+                orientation="h",
+                yanchor="top",
+                y=-0.2,
+                xanchor="center",
+                x=0.5
+            )
         )
-    )
 
-    st.plotly_chart(fig)
+        st.plotly_chart(fig)
 
-    residuos_array = residuos.values.flatten()
-    # Pruebas de normalidad
-    shapiro_stat, shapiro_p = shapiro(residuos_array)
-    st.write("Prueba de Shapiro-Wilk:")
-    st.write("Estadístico:", shapiro_stat)
-    st.write("p-valor:", shapiro_p)
+    with col2:
+        residuos_array = residuos.values.flatten()
 
-    anderson_result = anderson(residuos_array, dist='norm')
-    st.write("Prueba de Anderson-Darling:")
-    st.write("Estadístico:", anderson_result.statistic)
-    st.write("Valores críticos:")
-    for sl, cv in zip(anderson_result.significance_level, anderson_result.critical_values):
-        st.write(f"Nivel de significancia: {sl}%, Valor crítico: {cv}")
+        shapiro_p = stats.shapiro(residuos_array)[1]
+        ks_p = stats.kstest(residuos_array, 'norm')[1]
+        dagostino_p = stats.normaltest(residuos_array)[1]
 
-    if anderson_result.statistic < anderson_result.critical_values[2]:
-        st.write("No se rechaza la hipótesis nula de normalidad (al 5% de significancia).")
-    else:
-        st.write("Se rechaza la hipótesis nula de normalidad (al 5% de significancia).")
+        test_results = {
+            'Prueba de normalidad': ['Shapiro-Wilk', 'Kolmogorov-Smirnov', "D'Agostino-Pearson", ],
+            'p-valor': [shapiro_p, ks_p, dagostino_p, ]
+        }
 
-    ks_stat, ks_p = kstest(residuos_array, 'norm', args=(np.mean(residuos_array), np.std(residuos_array, ddof=1)))
-    st.write("Prueba de Kolmogorov-Smirnov:")
-    st.write("Estadístico:", ks_stat)
-    st.write("p-valor:", ks_p)
+        df = pd.DataFrame(test_results)
+
+        def color_pvalue(val):
+            color = '#B0ED8B' if val > 0.05 else '#ED8181'
+            return f'background-color: {color}'
+
+        st.table(df.style.applymap(color_pvalue, subset=['p-valor']))
+
+        st.write(f'''
+        <p style='font-size:20px;'>Otro supuesto es el comportamiento normal de los residuos, aunque visualmente se podria pensar
+        que si cumple esta distribucion, las pruebas de normalidad indican lo contrario 
+        </p>''',unsafe_allow_html=True)        
+
+    st.write("## **Supuesto de ausencia de multicolinealidad**")
 
     # Factor de Inflación de la Varianza (VIF)
     vif_data = pd.DataFrame()
     vif_data['Variable'] = X_train.columns
     vif_data['VIF'] = [variance_inflation_factor(X_train.values, i) for i in range(X_train.shape[1])]
-    st.write("Factor de Inflación de la Varianza (VIF):")
-    st.write(vif_data)
+    def highlight_vif(val):
+        color = '#ED8181' if val > 10 else '#B0ED8B'
+        return f'background-color: {color}'
 
+    # Aplicar el estilo solo en la columna 'VIF' y mostrar la tabla en Streamlit
+    styled_vif_data = vif_data.style.applymap(highlight_vif, subset=["VIF"])
+
+    col1, col2 = st.columns([0.7,0.3])
+
+    with col1:
+        st.table(styled_vif_data)
+
+    with col2:
+
+        if procesamiento == "Ninguno":
+            
+            st.write(f'''
+            <p style='font-size:20px;'> Como se observa ahi variables con una multicolinealidad demasiado alta, por lo que existen
+            otras variables que explican estas variables, por lo que se deberia tratar esto para ajustar de mejor manera el modelo 
+            </p>''',unsafe_allow_html=True)        
+
+        if procesamiento == "EDA":
+            
+            st.write(f'''
+            <p style='font-size:20px;'> Como se puede ver, quitar las variables mencionadas al principio soluciono el problema de multicolinealidad 
+            </p>''',unsafe_allow_html=True)
 
 
 
     ###### Regresión polinómica
     st.markdown("# Regresión Polinómica")
+
+    st.write(f'''
+    <p style='font-size:20px;'> Mediante la busqueda en grilla y k-fold se busca la mejor combinacion de potencias para ajustar
+             el modelo de regresion logistica 
+    </p>''',unsafe_allow_html=True)
+
+    st.code('''
     pipeline = Pipeline([
         ('poly_features', PolynomialFeatures(degree=2, include_bias=False)),
         ('linear_regression', LinearRegression())
@@ -328,7 +421,22 @@ if problema == "Regresion":
 
     best_degree = grid_search.best_params_['poly_features__degree']
     best_model = grid_search.best_estimator_
-    st.write("Mejor grado de polinomio encontrado:", best_degree)
+            
+    print("Mejor grado de polinomio encontrado:", best_degree)
+            ''')
+
+    pipeline = Pipeline([
+        ('poly_features', PolynomialFeatures(degree=2, include_bias=False)),
+        ('linear_regression', LinearRegression())
+    ])
+    param_grid = {'poly_features__degree': [2, 3, 4]}
+    kfolds = KFold(n_splits=5, shuffle=True, random_state=42)
+    grid_search = GridSearchCV(pipeline, param_grid, cv=kfolds, scoring='neg_mean_squared_error')
+    grid_search.fit(X_train, y_train)
+
+    best_degree = grid_search.best_params_['poly_features__degree']
+    best_model = grid_search.best_estimator_
+    st.write(f"### Mejor grado de polinomio encontrado: {best_degree}")
 
     poly = PolynomialFeatures(degree=best_degree, include_bias=False)
     X_train_poly = poly.fit_transform(X_train)
@@ -365,38 +473,119 @@ if problema == "Regresion":
 
     _,col1,_ = st.columns([0.2,1,0.2])
 
-    st.table(styled_coef_table)
+    with col1:
+        st.table(styled_coef_table)
 
     y_pred_poly = ols_poly_results.predict(X_train_poly_const)
     rmse_poly = np.sqrt(mean_squared_error(y_train, y_pred_poly))
     r2_poly = r2_score(y_train, y_pred_poly)
-
-    st.write("Resultados de Regresión Polinómica:")
-    st.write("RMSE:", rmse_poly)
-    st.write("R²:", r2_poly)
     
     y_pred_poly = best_model.predict(X_train)
     rmse_poly = np.sqrt(mean_squared_error(y_train, y_pred_poly))
     r2_poly = r2_score(y_train, y_pred_poly)
 
-    st.write("Resultados de Regresión Polinómica:")
-    st.write("RMSE:", rmse_poly)
-    st.write("R²:", r2_poly)
 
     # Gráfico de residuos vs valores predichos para regresión polinómica
     residuos_poly = y_train - y_pred_poly
-    fig = go.Figure()
-    fig.add_trace(go.Scatter(x=y_pred_poly.flatten(), y=residuos_poly.values.flatten(), mode="markers", name="Residuos"))
-    fig.add_trace(go.Scatter(x=y_pred_poly.flatten(), y=np.repeat(np.mean(residuos_poly), len(y_pred_poly)), mode="lines", name="Media de Residuos", line=dict(color="red", dash="dash")))
-    fig.update_layout(title="Residuos vs Valores Predichos (Regresión Polinómica)", xaxis_title="Valores Predichos", yaxis_title="Residuos")
-    st.plotly_chart(fig)
 
-    observaciones = np.arange(len(residuos_poly))
-    fig = go.Figure()
-    fig.add_trace(go.Scatter(x=observaciones, y=residuos_poly.values.flatten(), mode="lines+markers", name="Residuos"))
-    fig.add_trace(go.Scatter(x=observaciones, y=np.zeros(len(observaciones)), mode="lines", name="Referencia", line=dict(color="red", dash="dash")))
-    fig.update_layout(title="Residuos vs Observaciones", xaxis_title="Observaciones", yaxis_title="Residuos")
-    st.plotly_chart(fig)
+    col1, col2 = st.columns([0.7,0.3])
+
+    st.write(f'''
+    ## **Supuestos de media de los residuos y homoseasticidad:**
+    ''',unsafe_allow_html=True)
+
+    with col1:
+
+        fig = go.Figure()
+        fig.add_trace(go.Scatter(x=y_pred_poly.flatten(), y=residuos_poly.values.flatten(), mode="markers", name="Residuos",marker=dict(color='lightblue',size = 8)))
+        fig.add_trace(go.Scatter(x=y_pred_poly.flatten(), y=np.repeat(np.mean(residuos_poly), len(y_pred_poly)), mode="lines", name="Media de Residuos", line=dict(color="red", dash="dash")))
+        fig.update_layout(title="Residuos vs Valores Predichos (Regresión Polinómica)", xaxis_title="Valores Predichos", yaxis_title="Residuos")
+        st.plotly_chart(fig)
+
+    with col2:
+            
+        exog = sm.add_constant(X_train)
+        bp_test = het_breuschpagan(residuos_poly, exog)
+        labels = ['LM Statistic', 'LM-Test p-value', 'F-Statistic', 'F-Test p-value']
+        bp_results = dict(zip(labels, bp_test))
+        
+        bp_results_df = pd.DataFrame(list(bp_results.items()), columns=["Prueba", "Valor"])
+
+                # Extraer solo el estadístico LM y su p-valor
+        bp_statistic = bp_results['LM Statistic']
+        bp_p_value = bp_results['LM-Test p-value']
+
+        # Crear un DataFrame solo con el estadístico LM y su p-valor
+        bp_table_df = pd.DataFrame({
+            "Estadístico": ["LM Statistic"],
+            "Valor": [bp_statistic],
+            "P-valor": [bp_p_value]
+        })
+
+        # Aplicar el color según el p-valor
+        styled_bp_table = bp_table_df.style.applymap(
+            lambda val: 'background-color: #B0ED8B' if isinstance(val, (int, float)) and val < 0.05 else 
+                        'background-color: #ED8181' if isinstance(val, (int, float)) else '',
+            subset=["P-valor"]
+        )
+
+        st.table(styled_bp_table)
+
+        st.write(f'''
+        <p style='font-size:20px;'>media de los residuos: la media de los residuos es {np.mean(residuos_poly)} por lo que este supuesto se cumple
+        homoseasticidad: Para evaluar este supuesto se realiza la grafica de los residuos vs los valores predichos donde por la naturaleza
+        de la variable objetivo se ven lineas extrañas pero de lo que se puede interpretar es que no tienen una varianza constante, ademas
+        se evalua mediante la prueba breushpagan donde Un p-valor por debajo de 0.05 indica presencia de heterocedasticidad, que es este modelo
+        es el caso 
+        </p>''',unsafe_allow_html=True)
+
+    st.write(f'''
+    ## **Supuestos de Independencia de los residuos**
+    ''',unsafe_allow_html=True)
+
+    col1, col2 = st.columns([0.7,0.3])
+
+    with col1:
+
+        observaciones = np.arange(len(residuos_poly))
+        fig = go.Figure()
+        fig.add_trace(go.Scatter(x=observaciones, y=residuos_poly.values.flatten(), mode="lines+markers", name="Residuos",marker=dict(color="lightblue")))
+        fig.add_trace(go.Scatter(x=observaciones, y=np.zeros(len(observaciones)), mode="lines", name="Referencia", line=dict(color="red", dash="dash")))
+        fig.update_layout(title="Residuos vs Observaciones", xaxis_title="Observaciones", yaxis_title="Residuos")
+        st.plotly_chart(fig)
+
+    with col2:
+        
+        # Estadístico de Durbin-Watson
+        dw_stat = durbin_watson(residuos_poly)
+
+        # Crear el DataFrame con el resultado
+        dw_table_df = pd.DataFrame({
+            "Estadístico": ["Durbin-Watson"],
+            "Valor": [dw_stat[0]],
+        })
+
+        # Aplicar el color según el valor de Durbin-Watson
+        def colorize_dw(val):
+            if isinstance(val, (int, float)):
+                if abs(val - 2) < 0.5:  # Consideramos independencia si DW está cerca de 2
+                    return 'background-color: #B0ED8B'  # Verde (independientes)
+                else:
+                    return 'background-color: #ED8181'  # Rojo (dependientes)
+            return ''
+
+        # Aplicar el estilo
+        styled_dw_table = dw_table_df.style.applymap(colorize_dw, subset=["Valor"])
+
+        # Mostrar la tabla estilizada en Streamlit
+        _, col1, _ = st.columns([0.2, 1, 0.2])
+        st.table(styled_dw_table)
+
+        st.write(f'''
+        <p style='font-size:20px;'> Para evaluar la autocorrelacion de los residuos se hace la grafica ordenada de las predicciones vs
+        los residuos y ademas se usa la prueba durbing watson para evaluarlos estadisticamente, dando como resultado tanto visual como 
+        estadisticamente que no existe una autocorrelacion en los residuos
+        </p>''',unsafe_allow_html=True)
 
     theoretical_quantiles = np.linspace(0.001, 0.999, len(residuos_poly.values.flatten()))
     theoretical_values = stats.norm.ppf(theoretical_quantiles)
@@ -404,41 +593,166 @@ if problema == "Regresion":
 
     slope, intercept = np.polyfit(theoretical_values, residuals_sorted, 1)
 
-    fig = go.Figure()
+    st.write("## **Supuesto de normalidad en los residuos**")
 
-    fig.add_trace(go.Scatter(
-        x=theoretical_values,
-        y=residuals_sorted,
-        mode='markers',
-        name='Residuos vs Cuartiles teóricos',
-        marker=dict(color='lightblue',size = 8)
-    ))
 
-    fig.add_trace(go.Scatter(
-        x=theoretical_values,
-        y=slope * theoretical_values + intercept,
-        mode='lines',
-        name='Línea de referencia',
-        line=dict(color='red', dash='dash')
-    ))
+    col1, col2 = st.columns([0.7,0.3])
 
-    fig.update_layout(
-        title="Gráfico de probabilidad (Q-Q plot)",
-        xaxis_title="Cuartiles teóricos",
-        yaxis_title="Residuos",
-        height = 700,
-        legend=dict(
-            orientation="h",
-            yanchor="top",
-            y=-0.2,
-            xanchor="center",
-            x=0.5
+    with col1:
+        fig = go.Figure()
+
+        fig.add_trace(go.Scatter(
+            x=theoretical_values,
+            y=residuals_sorted,
+            mode='markers',
+            name='Residuos vs Cuartiles teóricos',
+            marker=dict(color='lightblue',size = 8)
+        ))
+
+        fig.add_trace(go.Scatter(
+            x=theoretical_values,
+            y=slope * theoretical_values + intercept,
+            mode='lines',
+            name='Línea de referencia',
+            line=dict(color='red', dash='dash')
+        ))
+
+        fig.update_layout(
+            title="Gráfico de probabilidad (Q-Q plot)",
+            xaxis_title="Cuartiles teóricos",
+            yaxis_title="Residuos",
+            height = 700,
+            legend=dict(
+                orientation="h",
+                yanchor="top",
+                y=-0.2,
+                xanchor="center",
+                x=0.5
+            )
         )
-    )
 
-    st.plotly_chart(fig)
+        st.plotly_chart(fig)
 
+    with col2:
+        residuos_array = residuos_poly.values.flatten()
+
+        shapiro_p = stats.shapiro(residuos_array)[1]
+        ks_p = stats.kstest(residuos_array, 'norm')[1]
+        dagostino_p = stats.normaltest(residuos_array)[1]
+
+        test_results = {
+            'Prueba de normalidad': ['Shapiro-Wilk', 'Kolmogorov-Smirnov', "D'Agostino-Pearson", ],
+            'p-valor': [shapiro_p, ks_p, dagostino_p, ]
+        }
+
+        df = pd.DataFrame(test_results)
+
+        def color_pvalue(val):
+            color = '#B0ED8B' if val > 0.05 else '#ED8181'
+            return f'background-color: {color}'
+
+        st.table(df.style.applymap(color_pvalue, subset=['p-valor']))
+
+        st.write(f'''
+        <p style='font-size:20px;'>Otro supuesto es el comportamiento normal de los residuos, visualmente se podria pensar
+        que si cumple esta distribucion esta vez las pruebas de normalidad si podriamos decir que con un poco mas de seguridad
+        los residuos pueden seguir una distribucion normal 
+        </p>''',unsafe_allow_html=True)        
+
+    st.write("## **Supuesto de ausencia de multicolinealidad**")
+
+    poly_columns = poly.get_feature_names_out(input_features=X_train.columns)
+    X_train_poly_df = pd.DataFrame(X_train_poly, columns=poly_columns)
+
+    # Calcular el Factor de Inflación de la Varianza (VIF)
+    vif_data = pd.DataFrame()
+    vif_data['Variable'] = X_train_poly_df.columns
+    vif_data['VIF'] = [variance_inflation_factor(X_train_poly_df.values, i) for i in range(X_train_poly_df.shape[1])]
+
+    # Función para aplicar el estilo
+    def highlight_vif(val):
+        color = '#ED8181' if val > 10 else '#B0ED8B'
+        return f'background-color: {color}'
+
+    # Aplicar el estilo a la columna 'VIF'
+    styled_vif_data = vif_data.style.applymap(highlight_vif, subset=["VIF"])
+
+    # Mostrar la tabla en Streamlit
+    col1, col2 = st.columns([0.7, 0.3])
+
+    with col1:
+        st.table(styled_vif_data)
+
+    with col2:
+            st.write(f'''
+            <p style='font-size:20px;'> Como se menciono anteriormente en la seccion de multicolinealidad, en estos modelos es muy
+                     comun que al tener tantos exponentes de una misma variables o combinacion entre varias, todos las variables 
+                     estas muuuuy correlacionadas con las demas y esto es problematico como se hablo anteriormente y como se observo
+                     en las estimaciones de los coeficientes de este modelo 
+            </p>''',unsafe_allow_html=True)        
+
+    st.write("# **Rendimientos**:")
+
+    st.write("#### **Entrenamiento**:")
+    y_pred = linear_model.predict(X_train)
+    rmse_linear = np.sqrt(mean_squared_error(y_train, y_pred))
+    r2_linear = r2_score(y_train, y_pred) #modelo base la media de y
     
+    y_pred_poly = ols_poly_results.predict(X_train_poly_const)
+    rmse_poly = np.sqrt(mean_squared_error(y_train, y_pred_poly))
+    r2_poly = r2_score(y_train, y_pred_poly)
+
+    # Crear el DataFrame con los resultados
+    results = pd.DataFrame({
+        'Modelo': ['Lineal', 'Polinómico'],
+        'RMSE': [rmse_linear, rmse_poly],
+        'R²': [r2_linear, r2_poly]
+    })
+
+    st.table(results)
+
+    st.write("#### **validacion**:")
+    y_pred = linear_model.predict(X_test)
+    rmse_linear = np.sqrt(mean_squared_error(y_test, y_pred))
+    r2_linear = r2_score(y_test, y_pred) #modelo base la media de y
+    
+    X_test_poly = poly.fit_transform(X_test)
+    X_test_poly_const = sm.add_constant(X_test_poly)
+
+    y_pred_poly = ols_poly_results.predict(X_test_poly_const)
+    rmse_poly = np.sqrt(mean_squared_error(y_test, y_pred_poly))
+    r2_poly = r2_score(y_test, y_pred_poly)
+
+    # Crear el DataFrame con los resultados
+    results = pd.DataFrame({
+        'Modelo': ['Lineal', 'Polinómico'],
+        'RMSE': [rmse_linear, rmse_poly],
+        'R²': [r2_linear, r2_poly]
+    })
+
+    st.table(results)
+
+    st.write(f'''
+            <p style='font-size:20px;'> Se observa que en validacion el modelo de regresion lineal puedo generalizar de mejor manera que
+             el polinomico, esto podria ser por que el polinomico tiene una facilidad para sobreajustarse  
+        </p>''',unsafe_allow_html=True)
+
+
+    st.write("# **Conclusiones**:")
+
+    st.write(f'''
+            <p style='font-size:20px;'> Se realizo el ejercicio para aplicar lo aprendido, pero la naturaleza de la variable objetivo 
+            hacia que no tuviera sentido aplicar una regresion de estos tipos, pues la variable se asemeja mas a una variable categorica
+            que a una continua que serviria mas para estos modelos 
+        </p>''',unsafe_allow_html=True)
+
+    st.write(f'''
+            <p style='font-size:20px;'> Como se pudo ver en los analisis y en los resultados de los modelos, la regresion lineal fue 
+            mejor que la logistica por que aunque se inclute potencias y una capacidad de adptarse a datos no lineales, los coeficientes
+            y los rendimientos dan como ganador a la regresion lineal simple 
+        </p>''',unsafe_allow_html=True)
+    
+
 elif problema == "Clasificacion":
 
     import pandas as pd
