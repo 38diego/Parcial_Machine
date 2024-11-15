@@ -6,3 +6,4 @@ statsmodels
 seaborn
 plotly
 scipy
+imblearn
