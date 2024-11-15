@@ -238,8 +238,8 @@ if problema == "Regresion":
         st.table(styled_bp_table)
 
         st.write(f'''
-        <p style='font-size:20px;'>media de los residuos: la media de los residuos es {np.mean(residuos)} por lo que este supuesto se cumple
-        homoseasticidad: Para evaluar este supuesto se realiza la grafica de los residuos vs los valores predichos donde por la naturaleza
+        <p style='font-size:20px;'><b>media de los residuos:</b> la media de los residuos es {np.mean(residuos)} por lo que este supuesto se cumple<br>
+        <b>homoseasticidad:</b> Para evaluar este supuesto se realiza la grafica de los residuos vs los valores predichos donde por la naturaleza
         de la variable objetivo se ven lineas extrañas pero de lo que se puede interpretar es que no tienen una varianza constante, ademas
         se evalua mediante la prueba breushpagan donde Un p-valor por debajo de 0.05 indica presencia de heterocedasticidad, que es este modelo
         es el caso 
@@ -429,7 +429,7 @@ if problema == "Regresion":
         ('poly_features', PolynomialFeatures(degree=2, include_bias=False)),
         ('linear_regression', LinearRegression())
     ])
-    param_grid = {'poly_features__degree': [2, 3, 4]}
+    param_grid = {'poly_features__degree': [2]}
     kfolds = KFold(n_splits=5, shuffle=True, random_state=42)
     grid_search = GridSearchCV(pipeline, param_grid, cv=kfolds, scoring='neg_mean_squared_error')
     grid_search.fit(X_train, y_train)
@@ -471,6 +471,8 @@ if problema == "Regresion":
         subset=["P>|t|"]
     )
 
+    st.write("## **Coeficientes estimados**")
+
     _,col1,_ = st.columns([0.2,1,0.2])
 
     with col1:
@@ -488,18 +490,18 @@ if problema == "Regresion":
     # Gráfico de residuos vs valores predichos para regresión polinómica
     residuos_poly = y_train - y_pred_poly
 
-    col1, col2 = st.columns([0.7,0.3])
-
     st.write(f'''
     ## **Supuestos de media de los residuos y homoseasticidad:**
     ''',unsafe_allow_html=True)
+
+    col1, col2 = st.columns([0.7,0.3])
 
     with col1:
 
         fig = go.Figure()
         fig.add_trace(go.Scatter(x=y_pred_poly.flatten(), y=residuos_poly.values.flatten(), mode="markers", name="Residuos",marker=dict(color='lightblue',size = 8)))
         fig.add_trace(go.Scatter(x=y_pred_poly.flatten(), y=np.repeat(np.mean(residuos_poly), len(y_pred_poly)), mode="lines", name="Media de Residuos", line=dict(color="red", dash="dash")))
-        fig.update_layout(title="Residuos vs Valores Predichos (Regresión Polinómica)", xaxis_title="Valores Predichos", yaxis_title="Residuos")
+        fig.update_layout(title="Residuos vs Valores Predichos (Regresión Polinómica)", xaxis_title="Valores Predichos", yaxis_title="Residuos",height = 600)
         st.plotly_chart(fig)
 
     with col2:
@@ -532,8 +534,8 @@ if problema == "Regresion":
         st.table(styled_bp_table)
 
         st.write(f'''
-        <p style='font-size:20px;'>media de los residuos: la media de los residuos es {np.mean(residuos_poly)} por lo que este supuesto se cumple
-        homoseasticidad: Para evaluar este supuesto se realiza la grafica de los residuos vs los valores predichos donde por la naturaleza
+        <p style='font-size:20px;'><b>media de los residuos:</b> la media de los residuos es {np.mean(residuos_poly)} por lo que este supuesto se cumple<br>
+        <b>homoseasticidad:</b> Para evaluar este supuesto se realiza la grafica de los residuos vs los valores predichos donde por la naturaleza
         de la variable objetivo se ven lineas extrañas pero de lo que se puede interpretar es que no tienen una varianza constante, ademas
         se evalua mediante la prueba breushpagan donde Un p-valor por debajo de 0.05 indica presencia de heterocedasticidad, que es este modelo
         es el caso 
@@ -683,13 +685,22 @@ if problema == "Regresion":
     with col1:
         st.table(styled_vif_data)
 
-    with col2:
-            st.write(f'''
-            <p style='font-size:20px;'> Como se menciono anteriormente en la seccion de multicolinealidad, en estos modelos es muy
-                     comun que al tener tantos exponentes de una misma variables o combinacion entre varias, todos las variables 
-                     estas muuuuy correlacionadas con las demas y esto es problematico como se hablo anteriormente y como se observo
-                     en las estimaciones de los coeficientes de este modelo 
-            </p>''',unsafe_allow_html=True)        
+    if procesamiento == "Ninguno":
+        with col2:
+                st.write(f'''
+                <p style='font-size:20px;'> Como se menciono anteriormente en la seccion de multicolinealidad, en estos modelos es muy
+                        comun que al tener tantos exponentes de una misma variables o combinacion entre varias, todos las variables 
+                        estas muuuuy correlacionadas con las demas y esto es problematico como se hablo anteriormente y como se observo
+                        en las estimaciones de los coeficientes de este modelo 
+                </p>''',unsafe_allow_html=True)     
+    else:
+        with col2:
+                st.write(f'''
+                <p style='font-size:20px;'> Podemos ver que gracias al preprocesamiento, la multicolinealidad se elimino de una regresion
+                        polinomica, que como lo discutimos en la pagina de multicolinealidad, quitar este efecto es muy importante para 
+                        conseguir estimadores mas confiables  
+                </p>''',unsafe_allow_html=True)
+
 
     st.write("# **Rendimientos**:")
 
@@ -751,8 +762,9 @@ if problema == "Regresion":
             y los rendimientos dan como ganador a la regresion lineal simple 
         </p>''',unsafe_allow_html=True)
     
-
 elif problema == "Clasificacion":
+
+    st.write("# Regresion Logistica")
 
     import pandas as pd
     import numpy as np
@@ -808,8 +820,9 @@ elif problema == "Clasificacion":
 
     scaler = StandardScaler()
     X_scaled = pd.DataFrame(scaler.fit_transform(X_train), columns=X_train.columns)
-
+    
     if modelo == "Regresion logistica":
+
         X_scaled = sm.add_constant(X_scaled)
 
         log_reg_sm = sm.Logit(y_train, X_scaled).fit()
@@ -857,7 +870,6 @@ elif problema == "Clasificacion":
         col1, col2 = st.columns(2)
 
         with col1:
-            st.write("Matriz de Confusión - Conjunto de Entrenamiento")
             fig_train = go.Figure(data=go.Heatmap(
                 z=conf_matrix_train,
                 x=["Predicho 0", "Predicho 1"],
@@ -872,7 +884,6 @@ elif problema == "Clasificacion":
             st.plotly_chart(fig_train)
 
         with col2:
-            st.write("Matriz de Confusión - Conjunto de Prueba")
             fig_test = go.Figure(data=go.Heatmap(
                 z=conf_matrix_test,
                 x=["Predicho 0", "Predicho 1"],
@@ -946,6 +957,23 @@ elif problema == "Clasificacion":
         st.plotly_chart(fig_combined)
     
     elif modelo == "KNN":
+    
+        st.write('''<p style='font-size:23px;'>
+        Aplicamos la busqueda en grilla para buscar los mejores hiperparametros para el modelo de KNN 
+        </p>''',unsafe_allow_html=True)
+
+        st.code('''
+        knn = KNeighborsClassifier()
+
+        param_grid = {'n_neighbors': range(1, 21), 'weights': ['uniform', 'distance'], 'p': [1, 2]}  #Manhattan,  Euclidiana
+        kf = KFold(n_splits=5, shuffle=True, random_state=42)
+        grid_search = GridSearchCV(estimator=knn, param_grid=param_grid, cv=kf, scoring='accuracy')
+        grid_search.fit(X_scaled, y_train)
+
+        best_knn = grid_search.best_estimator_
+        print("Mejores parámetros:", grid_search.best_params_)
+        ''')
+
         knn = KNeighborsClassifier()
 
         param_grid = {'n_neighbors': range(1, 21), 'weights': ['uniform', 'distance'], 'p': [1, 2]}  #Manhattan,  Euclidiana
@@ -1060,4 +1088,84 @@ elif problema == "Clasificacion":
 
         # Mostrar la figura combinada
         st.plotly_chart(fig_combined)
-        
+    
+    elif modelo == "Comparacion":  
+        knn = KNeighborsClassifier()
+
+        param_grid = {'n_neighbors': range(1, 21), 'weights': ['uniform', 'distance'], 'p': [1, 2]}  #Manhattan,  Euclidiana
+        kf = KFold(n_splits=5, shuffle=True, random_state=42)
+        grid_search = GridSearchCV(estimator=knn, param_grid=param_grid, cv=kf, scoring='accuracy')
+        grid_search.fit(X_scaled, y_train)
+
+        best_knn = grid_search.best_estimator_
+
+        y_pred_train_proba = best_knn.predict(X_scaled)
+        y_pred_test_proba = best_knn.predict(scaler.transform(X_test))
+
+        threshold = st.slider("Selecciona el umbral de predicción:", 0.0, 1.0, 0.5, 0.01)
+
+        y_pred_train = (y_pred_train_proba >= threshold).astype(int)
+        y_pred_test = (y_pred_test_proba >= threshold).astype(int)
+
+        datos = st.selectbox("Seleccione el conjunto de datos: ", ["Entrenamiento", "Validacion"])
+
+        col1, col2 = st.columns(2)
+
+        if datos == "Entrenamiento":
+            
+            report = classification_report(y_train, y_pred_train, output_dict=True)
+
+            report_df = pd.DataFrame(report).transpose()
+
+            with col1:
+                st.write("### Classification Report KNN")
+                st.table(report_df)
+
+        else:
+
+            report = classification_report(y_test, y_pred_test, output_dict=True)
+
+            report_df = pd.DataFrame(report).transpose()
+
+            with col1:
+                st.write("### Classification Report KNN")
+                st.table(report_df)
+
+        X_scaled = sm.add_constant(X_scaled)
+
+        log_reg_sm = sm.Logit(y_train, X_scaled).fit()
+        y_pred_train_proba = log_reg_sm.predict(X_scaled)
+        y_pred_test_proba = log_reg_sm.predict(sm.add_constant(scaler.transform(X_test), has_constant='add'))
+
+        # Convertir probabilidades en etiquetas según el umbral seleccionado
+        y_pred_train = (y_pred_train_proba >= threshold).astype(int)
+        y_pred_test = (y_pred_test_proba >= threshold).astype(int)
+
+        if datos == "Entrenamiento":
+
+            report = classification_report(y_train, y_pred_train, output_dict=True)
+
+            report_df = pd.DataFrame(report).transpose()
+
+            with col2:
+                st.write("### Classification Report regresion logistica")
+                st.table(report_df)
+
+        else:
+
+            report = classification_report(y_test, y_pred_test, output_dict=True)
+
+            report_df = pd.DataFrame(report).transpose()
+
+            with col2:
+                st.write("### Classification Report regresion logistica")
+                st.table(report_df)
+
+        st.write("# **Conclusiones**")
+
+        st.write('''<p style='font-size:23px;'>
+        En general, en entrenamiento pareciera que el modelo de KNN se sobreajusto a los datos con los parametros encontrados en la busqueda en grilla
+        pero aun asi su rendimiento en valdicion es mejor que el del modelo logistico, aunque se puede evidenciar que cuando se balancean los datos, el
+        modelo logistico logra mejores resultados, cosa que el KNN no necesito para funcionar bien, por lo que para estos datos se adapta mejor un KNN para
+        la clasificacion de los vinos
+        </p>''',unsafe_allow_html=True)
