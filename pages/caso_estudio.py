@@ -44,13 +44,17 @@ problema = st.sidebar.selectbox("Seleccione el problema:", ["Regresion", "Clasif
 if problema == "Regresion":
 
     st.markdown("# Regresion Lineal")
-
+    
     Wine = pd.read_csv("WineQT.csv")
     procesamiento = st.selectbox("Preprocesamiento:", ["Ninguno", "EDA"],key="o")
 
     Wine = Wine.iloc[:, :-1]
 
     if procesamiento == "Ninguno":
+        st.write('''En esta parte se realiza la regresion lineal y polinomica sin tener en cuenta ningun procesamiento
+                    mas alla de quitar los outliers para evaluar como es el rendimiento del modelo con los datos crudos y sin
+                    meterle mucha ciencia al procedimiento, en la seccion de EDA, se detallara un procesamiento mas amplio''')
+
         fig = go.Figure()
         for col in Wine.columns:
             fig.add_trace(go.Box(y=Wine[col], name=col))
@@ -58,6 +62,44 @@ if problema == "Regresion":
         st.plotly_chart(fig)
 
     if procesamiento == "EDA":
+        st.write('''En esta parte se realiza la regresion lineal y polinomica teniendo en cuenta un procesamiento el cual incluye un 
+                    entendimiento de las variables para quitar posibles redundancias, quitar los outliers y normalizar las variables para evaluar 
+                    la mejoria en el rendimiento del modelo con los datos procesados y entendidos:''')
+        
+        st.write("""
+        El conjunto de datos contiene las siguientes características:
+
+        - **fixed acidity**: Acidez fija del vino.
+        - **volatile acidity**: Acidez volátil del vino.
+        - **citric acid**: Contenido de ácido cítrico.
+        - **residual sugar**: Azúcar residual.
+        - **chlorides**: Concentración de cloruros.
+        - **free sulfur dioxide**: Dióxido de azufre libre.
+        - **total sulfur dioxide**: Dióxido de azufre total.
+        - **density**: Densidad del vino.
+        - **pH**: Valor de pH.
+        - **sulphates**: Concentración de sulfatos.
+        - **alcohol**: Contenido alcohólico del vino.
+        - **quality**: Clasificación de la calidad del vino (escala del 0 al 10).
+        """)
+
+        st.write('''
+        *FORMA INTUITVA*
+        La densidad de un vino está muy influenciada por componentes como el contenido de alcohol y el azúcar residual. Estos factores afectan directamente la masa y, por ende, la densidad del líquido. Como estos atributos ya están representados, density se vuelve redundante.
+        <br><br>El pH, que mide la acidez, es otro aspecto que resulta de la combinación de distintas sustancias ácidas en el vino, como el ácido cítrico (citric acid) y la acidez volátil (volatile acidity). Como estos componentes específicos están directamente cuantificados en otras variables, el pH puede ser considerado como una medida general que añade poca información adicional.
+        <br><br>La acidez fija (fixed acidity) también se ve reflejada en variables como citric acid y volatile acidity. Estas variables representan distintos tipos de ácidos específicos, por lo que contar con una medida general de acidez fija es redundante, ya que puede descomponerse en estos elementos individuales.
+        ''',unsafe_allow_html=True)
+
+        st.write('''
+        *MULTICOLINEALIDAD*
+        Las variables density, pH y fixed acidity mostraron los valores de VIF más elevados en el modelo de regresion que se hizo 
+        anteriormente, lo que sugiere que están siendo explicadas por otras variables presentes en el conjunto de datos que como
+        anteriormente desde un punto de vista intuitivo, era el caso 
+        ''',unsafe_allow_html=True)
+
+
+
+        
         scaler = StandardScaler()
         Wine_imputed = Wine.drop(columns=["quality","fixed acidity", "density", "pH"])
         Wine_scaled = pd.DataFrame(scaler.fit_transform(Wine_imputed), columns=Wine_imputed.columns)
@@ -433,6 +475,9 @@ elif problema == "Clasificacion":
     balance = st.selectbox("Selecciona tecnica de balance:",
                         ["Original","ADASYN","BORDERLINE_SMOTE","RANDOM OVER SAMPLING", "RANDOM UNDER SAMPLING"])
 
+    modelo = st.selectbox("Selecciona modelo:",
+                        ["Regresion logistica","KNN","Comparacion"])
+
     if balance == "Original":
         X_train, X_test, y_train, y_test = train_test_split(X_original, y_original, test_size=0.2, random_state=42)
 
@@ -450,145 +495,256 @@ elif problema == "Clasificacion":
 
     scaler = StandardScaler()
     X_scaled = pd.DataFrame(scaler.fit_transform(X_train), columns=X_train.columns)
-    knn = KNeighborsClassifier()
 
-    param_grid = {'n_neighbors': range(1, 21), 'weights': ['uniform', 'distance'], 'p': [1, 2]}  #Manhattan,  Euclidiana
-    kf = KFold(n_splits=5, shuffle=True, random_state=42)
-    grid_search = GridSearchCV(estimator=knn, param_grid=param_grid, cv=kf, scoring='accuracy')
-    grid_search.fit(X_train, y_train)
+    if modelo == "Regresion logistica":
+        X_scaled = sm.add_constant(X_scaled)
 
-    best_knn = grid_search.best_estimator_
-    st.write("Mejores parámetros:", grid_search.best_params_)
+        log_reg_sm = sm.Logit(y_train, X_scaled).fit()
 
-    y_pred_knn = best_knn.predict(X_test)
-    y_pred_proba_knn = best_knn.predict_proba(X_test)[:, 1]
+        summary = log_reg_sm.summary()
 
-    X_scaled = sm.add_constant(X_scaled)
+        coef_table = summary.tables[1]  # El índice 1 tiene los coeficientes
 
-    # Crear el modelo en statsmodels
-    log_reg_sm = sm.Logit(y_train, X_scaled).fit()
+        coef_table_df = pd.DataFrame(coef_table)
 
-    summary = log_reg_sm.summary()
+        # Convertir todas las celdas a cadenas de texto para asegurar compatibilidad
+        coef_table_df = coef_table_df.applymap(str)
 
-    coef_table = summary.tables[1]  # El índice 1 tiene los coeficientes
+        # Configurar nombres de columnas de forma explícita
+        coef_table_df.columns = ["Variable", "Coef", "std err", "t", "P>|t|", "[0.025", "0.975]"]
+        coef_table_df = coef_table_df.drop(0)  # Eliminar fila de encabezado duplicado
+        coef_table_df.set_index("Variable", inplace=True)
 
-    coef_table_df = pd.DataFrame(coef_table)
+        # Asegurarse de que los valores en la columna "P>|t|" sean numéricos
+        coef_table_df["P>|t|"] = pd.to_numeric(coef_table_df["P>|t|"], errors='coerce')
 
-    # Convertir todas las celdas a cadenas de texto para asegurar compatibilidad
-    coef_table_df = coef_table_df.applymap(str)
-
-    # Configurar nombres de columnas de forma explícita
-    coef_table_df.columns = ["Variable", "Coef", "std err", "t", "P>|t|", "[0.025", "0.975]"]
-    coef_table_df = coef_table_df.drop(0)  # Eliminar fila de encabezado duplicado
-    coef_table_df.set_index("Variable", inplace=True)
-
-    # Asegurarse de que los valores en la columna "P>|t|" sean numéricos
-    coef_table_df["P>|t|"] = pd.to_numeric(coef_table_df["P>|t|"], errors='coerce')
-
-    # Aplicar color a los valores p en la columna "P>|t|"
-    styled_coef_table = coef_table_df.style.applymap(
-        lambda val: 'background-color: #B0ED8B' if val < 0.05 else 'background-color: #ED8181' if pd.notnull(val) else '',
-        subset=["P>|t|"]
-    )
-
-    st.table(styled_coef_table)
-
-    # Establecer un umbral ajustable para la predicción
-    threshold = st.slider("Selecciona el umbral de predicción:", 0.0, 1.0, 0.5, 0.01)
-
-    # Predicciones de probabilidad para el conjunto de entrenamiento y prueba
-    y_pred_train_proba = log_reg_sm.predict(X_scaled)
-    y_pred_test_proba = log_reg_sm.predict(sm.add_constant(scaler.transform(X_test), has_constant='add'))
-
-    # Convertir probabilidades en etiquetas según el umbral seleccionado
-    y_pred_train = (y_pred_train_proba >= threshold).astype(int)
-    y_pred_test = (y_pred_test_proba >= threshold).astype(int)
-
-    # Matrices de confusión para entrenamiento y prueba
-    conf_matrix_train = confusion_matrix(y_train, y_pred_train)
-    conf_matrix_test = confusion_matrix(y_test, y_pred_test)
-
-    col1, col2 = st.columns(2)
-
-    with col1:
-        st.write("Matriz de Confusión - Conjunto de Entrenamiento")
-        fig_train = go.Figure(data=go.Heatmap(
-            z=conf_matrix_train,
-            x=["Predicho 0", "Predicho 1"],
-            y=["Real 0", "Real 1"],
-            colorscale="Blues",
-            hoverongaps=False
-        ))
-        fig_train.update_layout(title="Matriz de Confusión (Entrenamiento)", xaxis_title="Predicción", yaxis_title="Real")
-        st.plotly_chart(fig_train)
-
-    with col2:
-        st.write("Matriz de Confusión - Conjunto de Prueba")
-        fig_test = go.Figure(data=go.Heatmap(
-            z=conf_matrix_test,
-            x=["Predicho 0", "Predicho 1"],
-            y=["Real 0", "Real 1"],
-            colorscale="Blues",
-            hoverongaps=False
-        ))
-        fig_test.update_layout(title="Matriz de Confusión (Prueba)", xaxis_title="Predicción", yaxis_title="Real")
-        st.plotly_chart(fig_test)
-
-    # Gráficos ROC y de Precisión-Recall
-    precision, recall, thresholds_pr = precision_recall_curve(y_train, y_pred_train_proba)
-    pr_auc = auc(recall, precision)
-
-    fpr, tpr, thresholds_roc = roc_curve(y_train, y_pred_train_proba)
-    roc_auc = auc(fpr, tpr)
-
-    # Encontrar el punto en las curvas correspondiente al umbral seleccionado
-    closest_idx_pr = np.argmin(np.abs(thresholds_pr - threshold))
-    closest_idx_roc = np.argmin(np.abs(thresholds_roc - threshold))
-
-    fig_combined = make_subplots(rows=1, cols=2, subplot_titles=("Curva ROC", "Curva de Precisión-Recall"))
-
-    # Curva ROC
-    fig_combined.add_trace(
-        go.Scatter(x=fpr, y=tpr, mode='lines', name=f'ROC curve (AUC = {roc_auc:.2f})', line=dict(color='darkorange')),
-        row=1, col=1
-    )
-    fig_combined.add_trace(
-        go.Scatter(x=[0, 1], y=[0, 1], mode='lines', name='Línea diagonal', line=dict(color='navy', dash='dash')),
-        row=1, col=1
-    )
-    fig_combined.add_trace(
-        go.Scatter(x=[fpr[closest_idx_roc]], y=[tpr[closest_idx_roc]], mode='markers',
-                name=f'Umbral = {threshold:.2f}', marker=dict(color='red', size=10)),
-        row=1, col=1
-    )
-
-    # Curva de Precisión-Recall
-    fig_combined.add_trace(
-        go.Scatter(x=recall, y=precision, mode='lines', name=f'Precision-Recall curve (AUC = {pr_auc:.2f})', line=dict(color='blue')),
-        row=1, col=2
-    )
-    fig_combined.add_trace(
-        go.Scatter(x=[recall[closest_idx_pr]], y=[precision[closest_idx_pr]], mode='markers',
-                name=f'Umbral = {threshold:.2f}', marker=dict(color='red', size=10)),
-        row=1, col=2
-    )
-
-    # Configuración de la figura
-    fig_combined.update_layout(
-        title="Curvas ROC y de Precisión-Recall",
-        showlegend=True,
-        legend = dict(
-        orientation="h",
-        yanchor="top",
-        y=-0.2,
-        xanchor="center",
-        x=0.5
+        # Aplicar color a los valores p en la columna "P>|t|"
+        styled_coef_table = coef_table_df.style.applymap(
+            lambda val: 'background-color: #B0ED8B' if val < 0.05 else 'background-color: #ED8181' if pd.notnull(val) else '',
+            subset=["P>|t|"]
         )
-    )
-    fig_combined.update_xaxes(title_text="False Positive Rate", row=1, col=1)
-    fig_combined.update_yaxes(title_text="True Positive Rate", row=1, col=1)
-    fig_combined.update_xaxes(title_text="Recall", row=1, col=2)
-    fig_combined.update_yaxes(title_text="Precision", row=1, col=2)
 
-    # Mostrar la figura combinada
-    st.plotly_chart(fig_combined)
+        st.table(styled_coef_table)
+
+        # Establecer un umbral ajustable para la predicción
+        threshold = st.slider("Selecciona el umbral de predicción:", 0.0, 1.0, 0.5, 0.01)
+
+        # Predicciones de probabilidad para el conjunto de entrenamiento y prueba
+        y_pred_train_proba = log_reg_sm.predict(X_scaled)
+        y_pred_test_proba = log_reg_sm.predict(sm.add_constant(scaler.transform(X_test), has_constant='add'))
+
+        # Convertir probabilidades en etiquetas según el umbral seleccionado
+        y_pred_train = (y_pred_train_proba >= threshold).astype(int)
+        y_pred_test = (y_pred_test_proba >= threshold).astype(int)
+
+        # Matrices de confusión para entrenamiento y prueba
+        conf_matrix_train = confusion_matrix(y_train, y_pred_train)
+        conf_matrix_test = confusion_matrix(y_test, y_pred_test)
+
+        col1, col2 = st.columns(2)
+
+        with col1:
+            st.write("Matriz de Confusión - Conjunto de Entrenamiento")
+            fig_train = go.Figure(data=go.Heatmap(
+                z=conf_matrix_train,
+                x=["Predicho 0", "Predicho 1"],
+                y=["Real 0", "Real 1"],
+                colorscale="Blues",
+                hoverongaps=False,
+                text=conf_matrix_train,  # Agregar los valores en cada celda
+                texttemplate="%{text}",   # Formato de texto
+                showscale=True
+            ))
+            fig_train.update_layout(title="Matriz de Confusión (Entrenamiento)", xaxis_title="Predicción", yaxis_title="Real")
+            st.plotly_chart(fig_train)
+
+        with col2:
+            st.write("Matriz de Confusión - Conjunto de Prueba")
+            fig_test = go.Figure(data=go.Heatmap(
+                z=conf_matrix_test,
+                x=["Predicho 0", "Predicho 1"],
+                y=["Real 0", "Real 1"],
+                colorscale="Blues",
+                hoverongaps=False,
+                text=conf_matrix_test,  # Agregar los valores en cada celda
+                texttemplate="%{text}",  # Formato de texto
+                showscale=True
+            ))
+            fig_test.update_layout(title="Matriz de Confusión (Prueba)", xaxis_title="Predicción", yaxis_title="Real")
+            st.plotly_chart(fig_test)
+
+        # Gráficos ROC y de Precisión-Recall
+        precision, recall, thresholds_pr = precision_recall_curve(y_train, y_pred_train_proba)
+        pr_auc = auc(recall, precision)
+
+        fpr, tpr, thresholds_roc = roc_curve(y_train, y_pred_train_proba)
+        roc_auc = auc(fpr, tpr)
+
+        # Encontrar el punto en las curvas correspondiente al umbral seleccionado
+        closest_idx_pr = np.argmin(np.abs(thresholds_pr - threshold))
+        closest_idx_roc = np.argmin(np.abs(thresholds_roc - threshold))
+
+        fig_combined = make_subplots(rows=1, cols=2, subplot_titles=("Curva ROC", "Curva de Precisión-Recall"))
+
+        # Curva ROC
+        fig_combined.add_trace(
+            go.Scatter(x=fpr, y=tpr, mode='lines', name=f'ROC curve (AUC = {roc_auc:.2f})', line=dict(color='darkorange')),
+            row=1, col=1
+        )
+        fig_combined.add_trace(
+            go.Scatter(x=[0, 1], y=[0, 1], mode='lines', name='Línea diagonal', line=dict(color='navy', dash='dash')),
+            row=1, col=1
+        )
+        fig_combined.add_trace(
+            go.Scatter(x=[fpr[closest_idx_roc]], y=[tpr[closest_idx_roc]], mode='markers',
+                    name=f'Umbral = {threshold:.2f}', marker=dict(color='red', size=10)),
+            row=1, col=1
+        )
+
+        # Curva de Precisión-Recall
+        fig_combined.add_trace(
+            go.Scatter(x=recall, y=precision, mode='lines', name=f'Precision-Recall curve (AUC = {pr_auc:.2f})', line=dict(color='blue')),
+            row=1, col=2
+        )
+        fig_combined.add_trace(
+            go.Scatter(x=[recall[closest_idx_pr]], y=[precision[closest_idx_pr]], mode='markers',
+                    name=f'Umbral = {threshold:.2f}', marker=dict(color='red', size=10)),
+            row=1, col=2
+        )
+
+        # Configuración de la figura
+        fig_combined.update_layout(
+            title="Curvas ROC y de Precisión-Recall",
+            showlegend=True,
+            legend = dict(
+            orientation="h",
+            yanchor="top",
+            y=-0.2,
+            xanchor="center",
+            x=0.5
+            )
+        )
+        fig_combined.update_xaxes(title_text="False Positive Rate", row=1, col=1)
+        fig_combined.update_yaxes(title_text="True Positive Rate", row=1, col=1)
+        fig_combined.update_xaxes(title_text="Recall", row=1, col=2)
+        fig_combined.update_yaxes(title_text="Precision", row=1, col=2)
+
+        # Mostrar la figura combinada
+        st.plotly_chart(fig_combined)
+    
+    elif modelo == "KNN":
+        knn = KNeighborsClassifier()
+
+        param_grid = {'n_neighbors': range(1, 21), 'weights': ['uniform', 'distance'], 'p': [1, 2]}  #Manhattan,  Euclidiana
+        kf = KFold(n_splits=5, shuffle=True, random_state=42)
+        grid_search = GridSearchCV(estimator=knn, param_grid=param_grid, cv=kf, scoring='accuracy')
+        grid_search.fit(X_scaled, y_train)
+
+        best_knn = grid_search.best_estimator_
+        st.write("Mejores parámetros:", grid_search.best_params_)
+
+        # Predicciones de probabilidad para el conjunto de entrenamiento y prueba
+        y_pred_train_proba = best_knn.predict(X_scaled)
+        y_pred_test_proba = best_knn.predict(scaler.transform(X_test))
+
+        threshold = st.slider("Selecciona el umbral de predicción:", 0.0, 1.0, 0.5, 0.01)
+
+        # Convertir probabilidades en etiquetas según el umbral seleccionado
+        y_pred_train = (y_pred_train_proba >= threshold).astype(int)
+        y_pred_test = (y_pred_test_proba >= threshold).astype(int)
+
+        # Matrices de confusión para entrenamiento y prueba
+        conf_matrix_train = confusion_matrix(y_train, y_pred_train)
+        conf_matrix_test = confusion_matrix(y_test, y_pred_test)
+
+        col1, col2 = st.columns(2)
+
+        with col1:
+            st.write("Matriz de Confusión - Conjunto de Entrenamiento")
+            fig_train = go.Figure(data=go.Heatmap(
+                z=conf_matrix_train,
+                x=["Predicho 0", "Predicho 1"],
+                y=["Real 0", "Real 1"],
+                colorscale="Blues",
+                hoverongaps=False,
+                text=conf_matrix_train,  # Agregar los valores en cada celda
+                texttemplate="%{text}",   # Formato de texto
+                showscale=True
+            ))
+            fig_train.update_layout(title="Matriz de Confusión (Entrenamiento)", xaxis_title="Predicción", yaxis_title="Real")
+            st.plotly_chart(fig_train)
+
+        with col2:
+            st.write("Matriz de Confusión - Conjunto de Prueba")
+            fig_test = go.Figure(data=go.Heatmap(
+                z=conf_matrix_test,
+                x=["Predicho 0", "Predicho 1"],
+                y=["Real 0", "Real 1"],
+                colorscale="Blues",
+                hoverongaps=False,
+                text=conf_matrix_test,  # Agregar los valores en cada celda
+                texttemplate="%{text}",  # Formato de texto
+                showscale=True
+            ))
+            fig_test.update_layout(title="Matriz de Confusión (Prueba)", xaxis_title="Predicción", yaxis_title="Real")
+            st.plotly_chart(fig_test)
+
+        # Gráficos ROC y de Precisión-Recall
+        precision, recall, thresholds_pr = precision_recall_curve(y_train, y_pred_train_proba)
+        pr_auc = auc(recall, precision)
+
+        fpr, tpr, thresholds_roc = roc_curve(y_train, y_pred_train_proba)
+        roc_auc = auc(fpr, tpr)
+
+        # Encontrar el punto en las curvas correspondiente al umbral seleccionado
+        closest_idx_pr = np.argmin(np.abs(thresholds_pr - threshold))
+        closest_idx_roc = np.argmin(np.abs(thresholds_roc - threshold))
+
+        fig_combined = make_subplots(rows=1, cols=2, subplot_titles=("Curva ROC", "Curva de Precisión-Recall"))
+
+        # Curva ROC
+        fig_combined.add_trace(
+            go.Scatter(x=fpr, y=tpr, mode='lines', name=f'ROC curve (AUC = {roc_auc:.2f})', line=dict(color='darkorange')),
+            row=1, col=1
+        )
+        fig_combined.add_trace(
+            go.Scatter(x=[0, 1], y=[0, 1], mode='lines', name='Línea diagonal', line=dict(color='navy', dash='dash')),
+            row=1, col=1
+        )
+        fig_combined.add_trace(
+            go.Scatter(x=[fpr[closest_idx_roc]], y=[tpr[closest_idx_roc]], mode='markers',
+                    name=f'Umbral = {threshold:.2f}', marker=dict(color='red', size=10)),
+            row=1, col=1
+        )
+
+        # Curva de Precisión-Recall
+        fig_combined.add_trace(
+            go.Scatter(x=recall, y=precision, mode='lines', name=f'Precision-Recall curve (AUC = {pr_auc:.2f})', line=dict(color='blue')),
+            row=1, col=2
+        )
+        fig_combined.add_trace(
+            go.Scatter(x=[recall[closest_idx_pr]], y=[precision[closest_idx_pr]], mode='markers',
+                    name=f'Umbral = {threshold:.2f}', marker=dict(color='red', size=10)),
+            row=1, col=2
+        )
+
+        # Configuración de la figura
+        fig_combined.update_layout(
+            title="Curvas ROC y de Precisión-Recall",
+            showlegend=True,
+            legend = dict(
+            orientation="h",
+            yanchor="top",
+            y=-0.2,
+            xanchor="center",
+            x=0.5
+            )
+        )
+        fig_combined.update_xaxes(title_text="False Positive Rate", row=1, col=1)
+        fig_combined.update_yaxes(title_text="True Positive Rate", row=1, col=1)
+        fig_combined.update_xaxes(title_text="Recall", row=1, col=2)
+        fig_combined.update_yaxes(title_text="Precision", row=1, col=2)
+
+        # Mostrar la figura combinada
+        st.plotly_chart(fig_combined)
+        
