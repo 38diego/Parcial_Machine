@@ -737,7 +737,6 @@ if problema == "Regresion":
              el polinomico, esto podria ser por que el polinomico tiene una facilidad para sobreajustarse  
         </p>''',unsafe_allow_html=True)
 
-
     st.write("# **Conclusiones**:")
 
     st.write(f'''
