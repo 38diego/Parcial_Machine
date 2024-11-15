@@ -2,32 +2,17 @@ import streamlit as st
 
 st.set_page_config(layout="wide")  # Debe ser la primera llamada
 
-# --- Configuración de la navegación ---
-Regresion_lineal = st.Page(
-    'pages/Regresion_Lineal.py',
-    title='Regresion_Lineal',
-    url_path='',
-    default=True,
-)
+# Definir las páginas como opciones
+paginas = {
+    "Caso de estudio": "pages/caso_estudio.py",
+    "Laboratorio supuestos": "pages/Laboratorio_supuestos.py",
+    "Multicolinealidad": "pages/Multicolinealidad.py",
+    "Regresión Lineal": "pages/Regresion_Lineal.py"
+}
 
-Laboratorio = st.Page(
-    'pages/Laboratorio_supuestos.py',
-    title='Laboratorio_supuestos',
-    url_path='Laboratorio',
-)
+st.sidebar.title("Actividades")
+seleccion = st.sidebar.selectbox("Seleccione una página", list(paginas.keys()))
 
-Multicolinealidad = st.Page(
-    'pages/Multicolinealidad.py',
-    title='Multicolinealidad',
-    url_path='Multicolinealidad',
-)
-
-caso_estudio = st.Page(
-    'pages/caso_estudio.py',
-    title='Caso de estudio',
-    url_path='caso_estudio', 
-)
-
-streamlit_page = st.navigation([Regresion_lineal,Laboratorio,Multicolinealidad,caso_estudio])
-
-streamlit_page.run()
+# Ejecutar la página seleccionada
+pagina_seleccionada = paginas[seleccion]
+exec(open(pagina_seleccionada).read())
