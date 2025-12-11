@@ -36,7 +36,7 @@ La aplicación permite explorar conceptos clave de Machine Learning a través de
 Para explorar la aplicación, ejecuta el siguiente comando en tu terminal:
 
 ```bash
-streamlit run streamlit_app.py
+streamlit run app.py
 ```
 
 O ir al [streamlit cloud](https://parcialmachine.streamlit.app/)
