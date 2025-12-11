@@ -2,6 +2,15 @@ import streamlit as st
 
 st.set_page_config(layout="wide")  # Debe ser la primera llamada
 
+# Ocultar la navegación automática de Streamlit generada por la carpeta pages
+st.markdown("""
+<style>
+    [data-testid="stSidebarNav"] {
+        display: none;
+    }
+</style>
+""", unsafe_allow_html=True)
+
 # Definir las páginas como opciones
 paginas = {
     "Caso de estudio": "pages/caso_estudio.py",
