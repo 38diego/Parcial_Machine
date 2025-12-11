@@ -1,6 +1,7 @@
 streamlit==1.38.0
 matplotlib
-scikit-learn
+scikit-learn<1.6
+imbalanced-learn
 streamlit_navigation_bar
 statsmodels
 seaborn
